@@ -1,7 +1,7 @@
 /**
  * =======================================================
- * DASHBOARD (PUBLIC, READ-ONLY)
- * Membaca langsung dari Firestore, tanpa Apps Script.
+ *  DASHBOARD (PUBLIC, READ-ONLY)
+ *  Membaca langsung dari Firestore, tanpa Apps Script.
  * =======================================================
  */
 const Dashboard = {
@@ -56,6 +56,7 @@ const Dashboard = {
     selTahun.value = this.state.tahun;
     selBulan.value = this.state.bulan;
 
+    // saat ganti tahun, refresh daftar bulan yang tersedia untuk tahun itu
     selTahun.addEventListener('change', () => {
       const bulanList = periods.filter(p => p.tahun === selTahun.value).map(p => p.bulan);
       selBulan.innerHTML = bulanList.map(b => `<option value="${b}">${b}</option>`).join('');
@@ -97,40 +98,11 @@ const Dashboard = {
   },
 
   renderError(message) {
-    const tbody = document.getElementById('tabelCapaianBody');
-    if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="6" class="state-box error">⚠ ${Utils.escape(message)}</td></tr>`;
-    }
-  },
-
-  // Helper untuk menentukan Predikat Kinerja
-  hitungPredikat(nilai) {
-    if (nilai >= 95) return 'Sangat Baik';
-    if (nilai >= 85) return 'Baik';
-    if (nilai >= 70) return 'Cukup';
-    return 'Kurang';
-  },
-
-  // Helper untuk merender Bintang Kepuasan
-  renderBintang(skor, maxSkor = 4) {
-    const persentase = (skor / maxSkor) * 5; 
-    let starHtml = '';
-    for (let i = 1; i <= 5; i++) {
-      if (i <= Math.floor(persentase)) {
-        starHtml += '<i class="fa-solid fa-star" style="color: #ffb100;"></i>';
-      } else if (i - 0.5 <= persentase) {
-        starHtml += '<i class="fa-solid fa-star-half-stroke" style="color: #ffb100;"></i>';
-      } else {
-        starHtml += '<i class="fa-regular fa-star" style="color: #ccc;"></i>';
-      }
-    }
-    return starHtml;
+    document.getElementById('kpiGrid').innerHTML = `<div class="state-box error">⚠ ${Utils.escape(message)}</div>`;
   },
 
   renderAll(data) {
-    // Jalankan render grid atas & tabel detail
-    this.renderKpiGayaBaru(data.pk, data.monitoring);
-    
+    this.renderKpi(data.pk);
     Charts.renderGauge('gaugeCanvas', data.pk ? data.pk.Operasional : 0);
     if (data.primaaksi) {
       Charts.renderPie('pieCanvas',
@@ -143,98 +115,44 @@ const Dashboard = {
     this.renderKegiatan(data.kegiatan);
   },
 
-  // MENYUNTIKKAN DATA LANGSUNG PADA STRUKTUR ID YANG SUDAH ADA DI HTML
-  renderKpiGayaBaru(pk, monitoringRows) {
-    const tableHeaderBulan = document.getElementById('th-bulan-ini');
-    const tbody = document.getElementById('tabelCapaianBody');
-    
-    if (tableHeaderBulan) {
-      tableHeaderBulan.textContent = `Capaian Bulan ${this.state.bulan} ${this.state.tahun}`;
-    }
-
-    // Jika data Firestore kosong, reset semua teks ke 0 / default
+  renderKpi(pk) {
+    const grid = document.getElementById('kpiGrid');
     if (!pk) {
-      ['Operasional', 'Piutang', 'LKE', 'IKM', 'IPAK', 'PrimaAksi'].forEach(k => {
-        const valEl = document.getElementById(`top_${k}`);
-        const badgeEl = document.getElementById(`badge_${k}`);
-        const starsEl = document.getElementById(`stars_${k}`);
-        if (valEl) valEl.textContent = (k === 'IKM' || k === 'IPAK') ? '0' : '0%';
-        if (badgeEl) badgeEl.textContent = '-';
-        if (starsEl) starsEl.innerHTML = '';
-      });
-      if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:#999;">Belum ada data capaian pada periode ini.</td></tr>`;
+      grid.innerHTML = `<div class="state-box">Belum ada data PK untuk periode ini.</div>`;
       return;
     }
+    const fields = [
+      { key: 'Operasional', unit: '%' },
+      { key: 'Piutang', unit: '%' },
+      { key: 'LKE', unit: '%' },
+      { key: 'IKM', unit: '' },
+      { key: 'IPAK', unit: '' },
+      { key: 'PrimaAksi', unit: '%' }
+    ];
 
-    const op = Number(pk.Operasional) || 0;
-    const pi = Number(pk.Piutang) || 0;
-    const lke = Number(pk.LKE) || 0;
-    const ikm = Number(pk.IKM) || 0;
-    const ipak = Number(pk.IPAK) || 0;
-    const pa = Number(pk.PrimaAksi) || 0;
+    grid.innerHTML = fields.map(f => {
+      const raw = pk[f.key];
+      const value = Number(raw) || 0;
+      const isPercentLike = f.unit === '%';
+      const pct = isPercentLike ? value : Math.min(100, value * 10); // skala kasar utk ring non-persen (mis. IKM 0-10)
+      const status = pct >= 90 ? 'success' : pct >= 75 ? 'warning' : 'danger';
+      const color = status === 'success' ? 'var(--green)' : status === 'warning' ? 'var(--orange)' : 'var(--red)';
 
-    // 1. Update Konten Teks Cards Berdasarkan ID Secara Presisi
-    if (document.getElementById('top_Operasional')) document.getElementById('top_Operasional').textContent = `${op}%`;
-    if (document.getElementById('badge_Operasional')) document.getElementById('badge_Operasional').textContent = this.hitungPredikat(op);
+      return `
+        <div class="kpi-card" data-status="${status}">
+          <div class="kpi-top">
+            <span class="kpi-label">${f.key}</span>
+            <div class="kpi-ring" style="--pct:${pct}; --ring-color:${color};">
+              <div class="kpi-ring-inner">${Math.round(pct)}</div>
+            </div>
+          </div>
+          <div class="kpi-value" data-count-to="${value}">0${isPercentLike ? '<span class="unit">%</span>' : ''}</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" style="background:${color};" data-target-width="${pct}%"></div></div>
+        </div>`;
+    }).join('');
 
-    if (document.getElementById('top_Piutang')) document.getElementById('top_Piutang').textContent = `${pi}%`;
-    if (document.getElementById('badge_Piutang')) document.getElementById('badge_Piutang').textContent = this.hitungPredikat(pi);
-
-    if (document.getElementById('top_LKE')) document.getElementById('top_LKE').textContent = `${lke}%`;
-    if (document.getElementById('badge_LKE')) document.getElementById('badge_LKE').textContent = this.hitungPredikat(lke);
-
-    if (document.getElementById('top_IKM')) document.getElementById('top_IKM').textContent = ikm;
-    if (document.getElementById('stars_IKM')) document.getElementById('stars_IKM').innerHTML = this.renderBintang(ikm, 4);
-
-    if (document.getElementById('top_IPAK')) document.getElementById('top_IPAK').textContent = ipak;
-    if (document.getElementById('stars_IPAK')) document.getElementById('stars_IPAK').innerHTML = this.renderBintang(ipak, 10);
-
-    if (document.getElementById('top_PrimaAksi')) document.getElementById('top_PrimaAksi').textContent = `${pa}%`;
-    if (document.getElementById('badge_PrimaAksi')) document.getElementById('badge_PrimaAksi').textContent = pa >= 80 ? 'Baik' : 'Cukup';
-
-    // 2. Ekstrak data gangguan log stasiun kota untuk Keterangan Tabel
-    let daftarSiteKendala = [];
-    if (monitoringRows && monitoringRows.length > 0) {
-      monitoringRows.forEach(r => {
-        if (String(r.status).toLowerCase() !== 'normal') {
-          daftarSiteKendala.push(`<span class="site-tag"><i class="fa-solid fa-location-dot"></i> ${Utils.escape(r.site)} (${Utils.escape(r.status)})</span>`);
-        }
-      });
-    }
-
-    let keteranganOperasional = daftarSiteKendala.length > 0 
-      ? `Terdapat kendala teknis pada site: ${daftarSiteKendala.join(' ')}` 
-      : '✅ Semua stasiun monitoring beroperasi normal tanpa gangguan.';
-
-    // 3. Terapkan Baris Data ke Tabel Detail
-    if (tbody) {
-      tbody.innerHTML = `
-        <tr>
-          <td style="text-align:center;">1.</td>
-          <td><strong>Persentase (%) Terjaganya Operasional dan Fungsi Monitoring dari Stasiun Monitor Frekuensi Radio di UPT</strong></td>
-          <td style="text-align:center; color:#555; font-weight:600;">85%</td>
-          <td style="text-align:center; font-weight:700; color:#0056b3;">${op}%</td>
-          <td style="text-align:center; font-weight:700;">${op}%</td>
-          <td><div class="keterangan-cell">${keteranganOperasional}</div></td>
-        </tr>
-        <tr>
-          <td style="text-align:center;">2.</td>
-          <td><strong>Persentase Tingkat Penyelesaian Pelayanan Piutang BHP Frekuensi Radio</strong></td>
-          <td style="text-align:center; color:#555; font-weight:600;">100%</td>
-          <td style="text-align:center; font-weight:700; color:#0056b3;">${pi}%</td>
-          <td style="text-align:center; font-weight:700;">${pi}%</td>
-          <td><div class="keterangan-cell">Realisasi penagihan piutang berjalan tertib.</div></td>
-        </tr>
-        <tr>
-          <td style="text-align:center;">3.</td>
-          <td><strong>Nilai Lembar Kerja Evaluasi (LKE) Pembangunan Zona Integritas</strong></td>
-          <td style="text-align:center; color:#555; font-weight:600;">100%</td>
-          <td style="text-align:center; font-weight:700; color:#0056b3;">${lke}%</td>
-          <td style="text-align:center; font-weight:700;">${lke}%</td>
-          <td><div class="keterangan-cell">Pemenuhan administrasi ZI tercapai sesuai target.</div></td>
-        </tr>
-      `;
-    }
+    Utils.animateCounters(grid);
+    Utils.animateBars(grid);
   },
 
   renderSurvei(survei) {
