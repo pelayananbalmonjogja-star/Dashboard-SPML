@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Input Data — Dashboard PK Tim SPML</title>
+<title>Input Data — DASHBOARD SARANA PRASARANA MONITORING DAN LAYANAN</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
@@ -54,12 +54,12 @@
   </div>
 
   <nav class="tab-nav">
-    <button class="tab-btn active" data-target="tabPK">PK Utama</button>
-    <button class="tab-btn" data-target="tabSurvei">Survei</button>
-    <button class="tab-btn" data-target="tabPrimaaksi">Prima Aksi</button>
-    <button class="tab-btn" data-target="tabMonitoring">Monitoring Site</button>
-    <button class="tab-btn" data-target="tabPelayanan">Pelayanan Publik</button>
-    <button class="tab-btn" data-target="tabKegiatan">Kegiatan</button>
+    <button class="tab-btn active" data-target="tabPK">Monitoring dan Evaluasi Capaian Perjanjian Kinerja</button>
+    <button class="tab-btn" data-target="tabSurvei">Pelaksanaan Survey Kepuasan Pelayanan Publik</button>
+    <button class="tab-btn" data-target="tabPrimaaksi">Tindak Lanjut Verifikasi Site ISR Microwave Link</button>
+    <button class="tab-btn" data-target="tabMonitoring">Kondisi Stasiun Monitoring SMFR</button>
+    <button class="tab-btn" data-target="tabPelayanan">Realisai Kegiatan</button>
+    <button class="tab-btn" data-target="tabKegiatan">Rencana Kegiatan</button>
   </nav>
 
   <div class="tab-content">
@@ -67,18 +67,18 @@
     <!-- ============ TAB PK UTAMA ============ -->
     <div class="tab-panel active" id="tabPK">
       <div class="form-card">
-        <h3>KPI Utama Bulanan</h3>
+        <h3>Monitoring dan Evaluasi Capaian Perjanjian Kinerja</h3>
         <p class="hint">Satu data mewakili satu periode (Tahun + Bulan). Isi ulang di periode yang sama untuk update.</p>
         <form id="formPK">
           <div class="form-row">
             <div class="field"><label>Tahun</label><input type="number" id="pkTahun" class="tahun-input" required></div>
             <div class="field"><label>Bulan</label><select id="pkBulan" class="bulan-select" required></select></div>
-            <div class="field"><label>Operasional (%)</label><input type="number" step="0.01" id="formPK_Operasional" required></div>
-            <div class="field"><label>Piutang (%)</label><input type="number" step="0.01" id="formPK_Piutang" required></div>
-            <div class="field"><label>LKE (%)</label><input type="number" step="0.01" id="formPK_LKE" required></div>
-            <div class="field"><label>IKM</label><input type="number" step="0.01" id="formPK_IKM" required></div>
-            <div class="field"><label>IPAK</label><input type="number" step="0.01" id="formPK_IPAK" required></div>
-            <div class="field"><label>Prima Aksi (%)</label><input type="number" step="0.01" id="formPK_PrimaAksi" required></div>
+            <div class="field"><label>Fungsi Monitoring dari Stasiun Monitor Frekuensi Radio (%)</label><input type="number" step="0.01" id="formPK_Operasional" required></div>
+            <div class="field"><label>Penyelenggaraan Layanan Sertifikasi Operator Radio (PenyelenggaraanUNAR, Bimtekdan Layanan MOTS)</label><input type="number" step="0.01" id="formPK_Piutang" required></div>
+            <div class="field"><label>Pemenuhan Nilai LKE Pembangunan Zona Integritas menuju WBK</label><input type="number" step="0.01" id="formPK_LKE" required></div>
+            <div class="field"><label>Pelaksanaan Survey Kepuasan Pelayanan Publik (IKM/IPKP)</label><input type="number" step="0.01" id="formPK_IKM" required></div>
+            <div class="field"><label>Pelaksanaan Survey Kepuasan Pelayanan Publik (IIPP/IPAK)</label><input type="number" step="0.01" id="formPK_IPAK" required></div>
+            <div class="field"><label>Tindak Lanjut Verifikasi Site ISR Microwave Link </label><input type="number" step="0.01" id="formPK_PrimaAksi" required></div>
           </div>
           <div class="form-status" id="pkStatus"></div>
           <div class="form-actions"><button type="submit" class="btn-primary">Simpan</button></div>
@@ -89,14 +89,14 @@
     <!-- ============ TAB SURVEI ============ -->
     <div class="tab-panel" id="tabSurvei">
       <div class="form-card">
-        <h3>Survei Kepuasan</h3>
+        <h3>Pelaksanaan Survey Kepuasan Pelayanan Publik</h3>
         <p class="hint">Satu data mewakili satu periode (Tahun + Bulan).</p>
         <form id="formSurvei">
           <div class="form-row">
             <div class="field"><label>Tahun</label><input type="number" id="surveiTahun" class="tahun-input" required></div>
             <div class="field"><label>Bulan</label><select id="surveiBulan" class="bulan-select" required></select></div>
-            <div class="field"><label>IKM</label><input type="number" step="0.01" id="formSurvei_IKM" required></div>
-            <div class="field"><label>IPAK</label><input type="number" step="0.01" id="formSurvei_IPAK" required></div>
+            <div class="field"><label>IKM/IPKP</label><input type="number" step="0.01" id="formSurvei_IKM" required></div>
+            <div class="field"><label>IIPP/IPAK</label><input type="number" step="0.01" id="formSurvei_IPAK" required></div>
             <div class="field"><label>Responden</label><input type="number" id="formSurvei_Responden" required></div>
           </div>
           <div class="form-status" id="surveiStatus"></div>
@@ -108,7 +108,7 @@
     <!-- ============ TAB PRIMA AKSI ============ -->
     <div class="tab-panel" id="tabPrimaaksi">
       <div class="form-card">
-        <h3>Prima Aksi (Sesuai / Tidak Sesuai)</h3>
+        <h3>Tindak Lanjut Verifikasi Site ISR Microwave Link</h3>
         <p class="hint">Satu data mewakili satu periode (Tahun + Bulan).</p>
         <form id="formPrimaaksi">
           <div class="form-row">
@@ -126,7 +126,7 @@
     <!-- ============ TAB MONITORING SITE ============ -->
     <div class="tab-panel" id="tabMonitoring">
       <div class="form-card">
-        <h3>Status Monitoring Site</h3>
+        <h3>Kondisi Stasiun Monitoring SMFR</h3>
         <p class="hint">Bisa banyak site per periode. Pilih Tahun/Bulan lalu tambahkan tiap site satu per satu.</p>
         <form id="formMonitoring">
           <div class="form-row">
@@ -136,9 +136,9 @@
             <div class="field">
               <label>Status</label>
               <select id="formMonitoring_status" required>
-                <option value="Normal">Normal</option>
-                <option value="Rusak">Rusak</option>
-                <option value="Gangguan">Gangguan</option>
+                <option value="Normal">Normal(100%)</option>
+                <option value="Rusak">Rusak(0%)</option>
+                <option value="Gangguan">Gangguan(75%)</option>
               </select>
             </div>
           </div>
@@ -151,7 +151,7 @@
     <!-- ============ TAB PELAYANAN PUBLIK ============ -->
     <div class="tab-panel" id="tabPelayanan">
       <div class="form-card">
-        <h3>Pelayanan Publik (Target vs Capaian)</h3>
+        <h3>Realisai Kegiatan & Kondisi Stasiun Monitoring SMFR (Target vs Capaian)</h3>
         <p class="hint">Bisa banyak jenis layanan per periode.</p>
         <form id="formPelayanan">
           <div class="form-row">
@@ -168,15 +168,24 @@
     </div>
 
     <!-- ============ TAB KEGIATAN ============ -->
-    <div class="tab-panel" id="tabKegiatan">
+   <div class="tab-panel" id="tabKegiatan">
       <div class="form-card">
-        <h3>Log Kegiatan</h3>
+        <h3>Rencana Kegiatan</h3>
         <p class="hint">Bisa banyak kegiatan per periode.</p>
         <form id="formKegiatan">
           <div class="form-row">
             <div class="field"><label>Tahun</label><input type="number" id="kegiatanTahun" class="tahun-input" required></div>
             <div class="field"><label>Bulan</label><select id="kegiatanBulan" class="bulan-select" required></select></div>
-            <div class="field"><label>Tanggal</label><input type="date" id="formKegiatan_tanggal" required></div>
+            
+            <div class="field">
+              <label>Tanggal Mulai</label>
+              <input type="date" id="formKegiatan_tanggalMulai" required>
+            </div>
+            <div class="field">
+              <label>s.d. Tanggal Selesai</label>
+              <input type="date" id="formKegiatan_tanggalSelesai" required>
+            </div>
+            
             <div class="field"><label>Judul</label><input type="text" id="formKegiatan_judul" required></div>
           </div>
           <div class="field"><label>Keterangan</label><textarea id="formKegiatan_keterangan"></textarea></div>
