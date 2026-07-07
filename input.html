@@ -1,3 +1,14 @@
+<script src="js/firebase-config.js"></script>
+<script src="js/firebase-init.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/input.js"></script> ```
+
+Di sinilah penyebabnya: `auth.js` dimuat **sebelum** `input.js`. Ketika `auth.js` mendeteksi kamu sudah login, dia langsung memanggil fungsi `InputApp.init()`. Namun, karena browser belum selesai membaca file `input.js`, fungsi tersebut belum ada, sehingga proses pengisian dropdown bulan terlewat dan gagal.
+
+Berikut adalah kode utuh `input.html` yang sudah saya rapihkan urutan script-nya (Poin 2). Silakan **salin semua kode di bawah ini** dan timpa (replace) seluruh isi file `input.html` milikmu:
+
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -25,7 +36,6 @@
   </div>
 </header>
 
-<!-- ===================== LOGIN ===================== -->
 <div id="loginPanel">
   <div class="login-card">
     <h2>Masuk Admin</h2>
@@ -45,7 +55,6 @@
   </div>
 </div>
 
-<!-- ===================== PANEL INPUT (setelah login) ===================== -->
 <div id="inputPanel">
 
   <div class="input-topbar">
@@ -64,7 +73,6 @@
 
   <div class="tab-content">
 
-    <!-- ============ TAB PK UTAMA ============ -->
     <div class="tab-panel active" id="tabPK">
       <div class="form-card">
         <h3>KPI Utama Bulanan</h3>
@@ -86,7 +94,6 @@
       </div>
     </div>
 
-    <!-- ============ TAB SURVEI ============ -->
     <div class="tab-panel" id="tabSurvei">
       <div class="form-card">
         <h3>Survei Kepuasan</h3>
@@ -105,7 +112,6 @@
       </div>
     </div>
 
-    <!-- ============ TAB PRIMA AKSI ============ -->
     <div class="tab-panel" id="tabPrimaaksi">
       <div class="form-card">
         <h3>Prima Aksi (Sesuai / Tidak Sesuai)</h3>
@@ -123,7 +129,6 @@
       </div>
     </div>
 
-    <!-- ============ TAB MONITORING SITE ============ -->
     <div class="tab-panel" id="tabMonitoring">
       <div class="form-card">
         <h3>Status Monitoring Site</h3>
@@ -148,7 +153,6 @@
       </div>
     </div>
 
-    <!-- ============ TAB PELAYANAN PUBLIK ============ -->
     <div class="tab-panel" id="tabPelayanan">
       <div class="form-card">
         <h3>Pelayanan Publik (Target vs Capaian)</h3>
@@ -167,7 +171,6 @@
       </div>
     </div>
 
-    <!-- ============ TAB KEGIATAN ============ -->
     <div class="tab-panel" id="tabKegiatan">
       <div class="form-card">
         <h3>Log Kegiatan</h3>
@@ -189,7 +192,6 @@
   </div>
 </div>
 
-<!-- Firebase SDK (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -197,7 +199,10 @@
 <script src="js/firebase-config.js"></script>
 <script src="js/firebase-init.js"></script>
 <script src="js/utils.js"></script>
-<script src="js/auth.js"></script>
+
 <script src="js/input.js"></script>
+
+<script src="js/auth.js"></script>
+
 </body>
 </html>
