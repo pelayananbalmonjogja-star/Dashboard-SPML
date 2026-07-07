@@ -1,7 +1,7 @@
 /**
  * =======================================================
- *  INPUT APP (khusus halaman input.html, setelah login)
- *  Semua form Create/Update/Delete data ke Firestore ada di sini.
+ * INPUT APP (khusus halaman input.html, setelah login)
+ * Semua form Create/Update/Delete data ke Firestore ada di sini.
  * =======================================================
  */
 const InputApp = {
@@ -11,6 +11,7 @@ const InputApp = {
     if (this.initialized) return; // hindari pasang listener dobel saat re-login
     this.initialized = true;
 
+    console.log("InputApp diinisialisasi secara aman...");
     this.setupTabs();
     this.setupBulanSelects();
 
@@ -81,12 +82,22 @@ const InputApp = {
   setupBulanSelects() {
     const selects = document.querySelectorAll('select.bulan-select');
     const currentYear = new Date().getFullYear();
+    
+    // --- SISTEM PENGAMAN BULAN ---
+    // Gunakan BULAN_ORDER jika tersedia, jika belum termuat gunakan array cadangan ini agar tidak crash
+    let daftarBulan = (typeof BULAN_ORDER !== 'undefined' && Array.isArray(BULAN_ORDER)) ? BULAN_ORDER : [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+
     selects.forEach(sel => {
-      sel.innerHTML = BULAN_ORDER.map(b => `<option value="${b}">${b}</option>`).join('');
+      sel.innerHTML = daftarBulan.map(b => `<option value="${b}">${b}</option>`).join('');
     });
+    
     document.querySelectorAll('input.tahun-input').forEach(inp => {
       inp.value = currentYear;
     });
+    console.log("Dropdown bulan dan default tahun berhasil dipasang.");
   },
 
   /** Form untuk data 1-baris-per-periode: PK, Survei, Prima Aksi */
@@ -96,18 +107,24 @@ const InputApp = {
     const bulanEl = document.getElementById(bulanId);
     const statusEl = document.getElementById(statusId);
 
+    if (!form || !tahunEl || !bulanEl || !statusEl) return;
+
     const loadExisting = async () => {
       const tahun = tahunEl.value.trim();
       const bulan = bulanEl.value;
       if (!tahun || !bulan) return;
-      const doc = await db.collection(collection).doc(periodeId(tahun, bulan)).get();
-      fields.forEach(f => {
-        const el = document.getElementById(`${formId}_${f}`);
-        if (!el) return;
-        el.value = doc.exists && doc.data()[f] !== undefined ? doc.data()[f] : '';
-      });
-      statusEl.textContent = doc.exists ? 'Data sudah ada — menyimpan akan menimpa (update).' : 'Belum ada data untuk periode ini — menyimpan akan membuat baru.';
-      statusEl.className = doc.exists ? 'form-status exists' : 'form-status new';
+      try {
+        const doc = await db.collection(collection).doc(periodeId(tahun, bulan)).get();
+        fields.forEach(f => {
+          const el = document.getElementById(`${formId}_${f}`);
+          if (!el) return;
+          el.value = doc.exists && doc.data()[f] !== undefined ? doc.data()[f] : '';
+        });
+        statusEl.textContent = doc.exists ? 'Data sudah ada — menyimpan akan menimpa (update).' : 'Belum ada data untuk periode ini — menyimpan akan membuat baru.';
+        statusEl.className = 'form-status ' + (doc.exists ? 'exists' : 'new');
+      } catch (err) {
+        console.error("Gagal memuat data lama:", err);
+      }
     };
 
     tahunEl.addEventListener('change', loadExisting);
@@ -123,7 +140,9 @@ const InputApp = {
       const payload = { tahun: String(tahun), bulan };
       fields.forEach(f => {
         const el = document.getElementById(`${formId}_${f}`);
-        payload[f] = el.type === 'number' || el.inputMode === 'numeric' ? Number(el.value) || 0 : el.value;
+        if (el) {
+          payload[f] = el.type === 'number' || el.inputMode === 'numeric' ? Number(el.value) || 0 : el.value;
+        }
       });
 
       try {
@@ -146,6 +165,8 @@ const InputApp = {
     const tahunEl = document.getElementById(tahunId);
     const bulanEl = document.getElementById(bulanId);
     const listEl = document.getElementById(listId);
+    if (!form || !tahunEl || !bulanEl || !listEl) return;
+    
     let editingId = null;
 
     const renderList = async () => {
@@ -153,50 +174,58 @@ const InputApp = {
       const bulan = bulanEl.value;
       if (!tahun || !bulan) { listEl.innerHTML = ''; return; }
 
-      const snap = await db.collection(collection)
-        .where('tahun', '==', String(tahun))
-        .where('bulan', '==', bulan)
-        .get();
+      try {
+        const snap = await db.collection(collection)
+          .where('tahun', '==', String(tahun))
+          .where('bulan', '==', bulan)
+          .get();
 
-      const rows = [];
-      snap.forEach(doc => rows.push({ id: doc.id, ...doc.data() }));
+        const rows = [];
+        snap.forEach(doc => rows.push({ id: doc.id, ...doc.data() }));
 
-      if (rows.length === 0) {
-        listEl.innerHTML = `<div class="state-box" style="padding:16px 0;">Belum ada data untuk periode ini.</div>`;
-        return;
-      }
+        if (rows.length === 0) {
+          listEl.innerHTML = `<div class="state-box" style="padding:16px 0;">Belum ada data untuk periode ini.</div>`;
+          return;
+        }
 
-      listEl.innerHTML = rows.map(r => `
-        <div class="mini-row" data-id="${r.id}">
-          <span>${Utils.escape(rowLabel(r))}</span>
-          <span class="mini-row-actions">
-            <button type="button" class="btn-icon btn-edit" title="Edit"><i class="fa-solid fa-pen"></i></button>
-            <button type="button" class="btn-icon btn-delete" title="Hapus"><i class="fa-solid fa-trash"></i></button>
-          </span>
-        </div>`).join('');
+        listEl.innerHTML = rows.map(r => `
+          <div class="mini-row" data-id="${r.id}">
+            <span>${Utils.escape(rowLabel(r))}</span>
+            <span class="mini-row-actions">
+              <button type="button" class="btn-icon btn-edit" title="Edit"><i class="fa-solid fa-pen"></i></button>
+              <button type="button" class="btn-icon btn-delete" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+            </span>
+          </div>`).join('');
 
-      listEl.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          const id = e.target.closest('.mini-row').dataset.id;
-          if (!confirm('Hapus data ini?')) return;
-          await db.collection(collection).doc(id).delete();
-          renderList();
-        });
-      });
-
-      listEl.querySelectorAll('.btn-edit').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const rowEl = btn.closest('.mini-row');
-          const id = rowEl.dataset.id;
-          const row = rows.find(r => r.id === id);
-          editingId = id;
-          fields.forEach(f => {
-            const el = document.getElementById(`${formId}_${f}`);
-            if (el) el.value = row[f] !== undefined ? row[f] : '';
+        listEl.querySelectorAll('.btn-delete').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const rowEl = e.target.closest('.mini-row');
+            if (!rowEl) return;
+            const id = rowEl.dataset.id;
+            if (!confirm('Hapus data ini?')) return;
+            await db.collection(collection).doc(id).delete();
+            renderList();
           });
-          form.querySelector('button[type="submit"]').textContent = 'Update Data';
         });
-      });
+
+        listEl.querySelectorAll('.btn-edit').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const rowEl = e.target.closest('.mini-row');
+            if (!rowEl) return;
+            const id = rowEl.dataset.id;
+            const row = rows.find(r => r.id === id);
+            editingId = id;
+            fields.forEach(f => {
+              const el = document.getElementById(`${formId}_${f}`);
+              if (el) el.value = row[f] !== undefined ? row[f] : '';
+            });
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.textContent = 'Update Data';
+          });
+        });
+      } catch (err) {
+        console.error("Gagal merender list multi-form:", err);
+      }
     };
 
     tahunEl.addEventListener('change', renderList);
@@ -212,14 +241,17 @@ const InputApp = {
       const payload = { tahun: String(tahun), bulan };
       fields.forEach(f => {
         const el = document.getElementById(`${formId}_${f}`);
-        payload[f] = el.type === 'number' ? Number(el.value) || 0 : el.value;
+        if (el) {
+          payload[f] = el.type === 'number' ? Number(el.value) || 0 : el.value;
+        }
       });
 
       try {
         if (editingId) {
           await db.collection(collection).doc(editingId).set(payload, { merge: true });
           editingId = null;
-          form.querySelector('button[type="submit"]').textContent = 'Tambah Data';
+          const submitBtn = form.querySelector('button[type="submit"]');
+          if (submitBtn) submitBtn.textContent = 'Tambah Data';
         } else {
           await db.collection(collection).add(payload);
         }
@@ -236,3 +268,10 @@ const InputApp = {
     });
   }
 };
+
+// --- PENGAMAN LOCK DOM LOADING ---
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { InputApp.init(); });
+} else {
+    InputApp.init();
+}
