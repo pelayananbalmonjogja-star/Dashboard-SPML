@@ -1,82 +1,119 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard PK Tim SPML</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard PK Tim SPML</title>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <link rel="stylesheet" href="css/style.css">
-  
-  </head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
 <body>
 
-  <section id="kpiGrid" class="kpi-grid">
-    <div class="kpi-card card-blue">
-      <div class="kpi-icon"><i class="fa-solid fa-tower-broadcast"></i></div>
-      <div class="kpi-value" id="top_Operasional">0%</div>
-      <div class="kpi-label">Stasiun dan Perangkat Monitoring SMFR</div>
-      <span class="badge badge-blue" id="badge_Operasional">-</span>
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <p>Memuat data dashboard...</p>
+</div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-logo"><i class="fa-solid fa-chart-line"></i></div>
+      <div class="brand-text">
+        <h1 id="appName">Dashboard PK Tim SPML</h1>
+        <p id="appSubtitle">Pencapaian Kinerja Bulanan</p>
+      </div>
     </div>
 
-    <div class="kpi-card card-green">
-      <div class="kpi-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-      <div class="kpi-value" id="top_Piutang">0%</div>
-      <div class="kpi-label">Penyelenggaraan Layanan SOR(UNAR,BIMTEK dan Layanan MOTS)</div>
-      <span class="badge badge-green" id="badge_Piutang">-</span>
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label><i class="fa-regular fa-calendar"></i> Tahun</label>
+        <select id="selTahun"></select>
+      </div>
+      <div class="filter-group">
+        <label><i class="fa-regular fa-calendar-days"></i> Bulan</label>
+        <select id="selBulan"></select>
+      </div>
+      <button class="btn-refresh" id="btnRefresh"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      <a href="input.html" class="top-link"><i class="fa-solid fa-pen-to-square"></i> Input Data</a>
     </div>
+  </div>
+</header>
 
-    <div class="kpi-card card-purple">
-      <div class="kpi-icon"><i class="fa-solid fa-shield-halved"></i></div>
-      <div class="kpi-value" id="top_LKE">0%</div>
-      <div class="kpi-label">LKE Pembangunan ZI</div>
-      <span class="badge badge-purple" id="badge_LKE">-</span>
-    </div>
+<main>
 
-    <div class="kpi-card card-orange">
-      <div class="kpi-icon"><i class="fa-solid fa-face-smile"></i></div>
-      <div class="kpi-value" id="top_IKM">0</div>
-      <div class="kpi-label">IKM / IPKP</div>
-      <div class="stars" id="stars_IKM"></div>
-    </div>
+  <div class="section-title">Ringkasan Capaian PK</div>
+  <div class="kpi-grid" id="kpiGrid">
+    <div class="state-box">Memuat...</div>
+  </div>
 
-    <div class="kpi-card card-teal">
-      <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
-      <div class="kpi-value" id="top_IPAK">0</div>
-      <div class="kpi-label">IIPP / IPAK</div>
-      <div class="stars" id="stars_IPAK"></div>
+  <div class="section-title">Operasional &amp; Prima Aksi</div>
+  <div class="panel-grid">
+    <div class="panel">
+      <h3><i class="fa-solid fa-gauge-high"></i> Gauge Operasional</h3>
+      <div class="panel-canvas-wrap" style="height:220px;">
+        <canvas id="gaugeCanvas"></canvas>
+      </div>
     </div>
+    <div class="panel">
+      <h3><i class="fa-solid fa-chart-pie"></i> Prima Aksi</h3>
+      <div class="panel-canvas-wrap">
+        <canvas id="pieCanvas"></canvas>
+      </div>
+    </div>
+  </div>
 
-    <div class="kpi-card card-red">
-      <div class="kpi-icon"><i class="fa-solid fa-bullseye"></i></div>
-      <div class="kpi-value" id="top_PrimaAksi">0%</div>
-      <div class="kpi-label">PrimaAksi</div>
-      <span class="badge badge-red" id="badge_PrimaAksi">-</span>
-    </div>
-  </section>
+  <div class="section-title">Survei Kepuasan</div>
+  <div class="panel">
+    <div id="surveiBox"><div class="state-box">Memuat...</div></div>
+  </div>
 
-  <section class="table-section" style="margin-top: 32px;">
-    <div class="section-title">
-      <h2><i class="fa-solid fa-table-list"></i> Tabel Detail Capaian Kinerja Bulanan</h2>
+  <div class="section-title">Pelayanan Publik &amp; Status Site</div>
+  <div class="panel-grid">
+    <div class="panel">
+      <h3><i class="fa-solid fa-chart-column"></i> Target vs Capaian</h3>
+      <div class="panel-canvas-wrap" style="margin-bottom:16px;">
+        <canvas id="barCanvas"></canvas>
+      </div>
+      <div id="pelayananBox"></div>
     </div>
-    <div class="table-responsive">
-      <table class="gov-table">
-        <thead>
-          <tr>
-            <th style="width: 50px;">NO.</th>
-            <th>URAIAN KINERJA</th>
-            <th style="text-align: center;">Target</th>
-            <th style="text-align: center;" id="th-bulan-ini">Capaian Bulan Ini</th>
-            <th style="text-align: center;">Akumulasi s.d Bulan Ini</th>
-            <th>Keterangan / Lokasi Site</th>
-          </tr>
-        </thead>
-        <tbody id="tabelCapaianBody">
-          </tbody>
-      </table>
+    <div class="panel">
+      <h3><i class="fa-solid fa-tower-broadcast"></i> Status Monitoring Site</h3>
+      <div class="site-list" id="siteList">
+        <div class="state-box">Memuat...</div>
+      </div>
     </div>
-  </section>
+  </div>
 
+  <div class="section-title">Log Kegiatan</div>
+  <div class="table-wrap">
+    <div id="kegiatanWrap"><div class="state-box">Memuat...</div></div>
+  </div>
+
+</main>
+
+<footer>
+  Dashboard PK Tim SPML &middot; Dibangun dengan Firebase + GitHub Pages
+</footer>
+
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<!-- jQuery + DataTables -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/firebase-init.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/dashboard.js"></script>
 </body>
 </html>
