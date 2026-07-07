@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -25,7 +26,6 @@
   </div>
 </header>
 
-<!-- ===================== LOGIN ===================== -->
 <div id="loginPanel">
   <div class="login-card">
     <h2>Masuk Admin</h2>
@@ -45,7 +45,6 @@
   </div>
 </div>
 
-<!-- ===================== PANEL INPUT (setelah login) ===================== -->
 <div id="inputPanel">
 
   <div class="input-topbar">
@@ -64,7 +63,6 @@
 
   <div class="tab-content">
 
-    <!-- ============ TAB PK UTAMA ============ -->
     <div class="tab-panel active" id="tabPK">
       <div class="form-card">
         <h3>KPI Utama Bulanan</h3>
@@ -86,7 +84,6 @@
       </div>
     </div>
 
-    <!-- ============ TAB SURVEI ============ -->
     <div class="tab-panel" id="tabSurvei">
       <div class="form-card">
         <h3>Survei Kepuasan</h3>
@@ -105,7 +102,6 @@
       </div>
     </div>
 
-    <!-- ============ TAB PRIMA AKSI ============ -->
     <div class="tab-panel" id="tabPrimaaksi">
       <div class="form-card">
         <h3>Prima Aksi (Sesuai / Tidak Sesuai)</h3>
@@ -123,7 +119,6 @@
       </div>
     </div>
 
-    <!-- ============ TAB MONITORING SITE ============ -->
     <div class="tab-panel" id="tabMonitoring">
       <div class="form-card">
         <h3>Status Monitoring Site</h3>
@@ -148,7 +143,6 @@
       </div>
     </div>
 
-    <!-- ============ TAB PELAYANAN PUBLIK ============ -->
     <div class="tab-panel" id="tabPelayanan">
       <div class="form-card">
         <h3>Pelayanan Publik (Target vs Capaian)</h3>
@@ -167,7 +161,6 @@
       </div>
     </div>
 
-    <!-- ============ TAB KEGIATAN ============ -->
     <div class="tab-panel" id="tabKegiatan">
       <div class="form-card">
         <h3>Log Kegiatan</h3>
@@ -189,21 +182,17 @@
   </div>
 </div>
 
-<!-- 1. Firebase SDK (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
-<!-- 2. Konfigurasi Dasar & Helper Utilitas -->
 <script src="js/firebase-config.js"></script>
 <script src="js/firebase-init.js"></script>
 <script src="js/utils.js"></script>
 
-<!-- 3. Memuat Aplikasi Logic -->
-<script src="js/input.js"></script>
-
-<!-- 4. Memuat Manajer Otentikasi -->
 <script src="js/auth.js"></script>
+
+<script src="js/input.js"></script>
 
 </body>
 </html>
