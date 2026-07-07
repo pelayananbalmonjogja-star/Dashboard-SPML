@@ -97,10 +97,13 @@ const Dashboard = {
   },
 
   renderError(message) {
-    document.getElementById('kpiGrid').innerHTML = `<div class="state-box error">⚠ ${Utils.escape(message)}</div>`;
+    const tbody = document.getElementById('tabelCapaianBody');
+    if (tbody) {
+      tbody.innerHTML = `<tr><td colspan="6" class="state-box error">⚠ ${Utils.escape(message)}</td></tr>`;
+    }
   },
 
-  // Helper untuk menentukan Predikat Kinerja (Gambar 2)
+  // Helper untuk menentukan Predikat Kinerja
   hitungPredikat(nilai) {
     if (nilai >= 95) return 'Sangat Baik';
     if (nilai >= 85) return 'Baik';
@@ -108,7 +111,7 @@ const Dashboard = {
     return 'Kurang';
   },
 
-  // Helper untuk merender Bintang Kepuasan (Gambar 2)
+  // Helper untuk merender Bintang Kepuasan
   renderBintang(skor, maxSkor = 4) {
     const persentase = (skor / maxSkor) * 5; 
     let starHtml = '';
@@ -140,23 +143,56 @@ const Dashboard = {
     this.renderKegiatan(data.kegiatan);
   },
 
-  // MENGGANTIKAN FUNGSI RENDER KPI LAMA DENGAN STRUKTUR BERLOGO DAN TABEL DETAIL
+  // MENYUNTIKKAN DATA LANGSUNG PADA STRUKTUR ID YANG SUDAH ADA DI HTML
   renderKpiGayaBaru(pk, monitoringRows) {
-    const grid = document.getElementById('kpiGrid');
     const tableHeaderBulan = document.getElementById('th-bulan-ini');
+    const tbody = document.getElementById('tabelCapaianBody');
     
     if (tableHeaderBulan) {
       tableHeaderBulan.textContent = `Capaian Bulan ${this.state.bulan} ${this.state.tahun}`;
     }
 
+    // Jika data Firestore kosong, reset semua teks ke 0 / default
     if (!pk) {
-      grid.innerHTML = `<div class="state-box">Belum ada data PK untuk periode ini.</div>`;
-      const tbody = document.getElementById('tabelCapaianBody');
+      ['Operasional', 'Piutang', 'LKE', 'IKM', 'IPAK', 'PrimaAksi'].forEach(k => {
+        const valEl = document.getElementById(`top_${k}`);
+        const badgeEl = document.getElementById(`badge_${k}`);
+        const starsEl = document.getElementById(`stars_${k}`);
+        if (valEl) valEl.textContent = (k === 'IKM' || k === 'IPAK') ? '0' : '0%';
+        if (badgeEl) badgeEl.textContent = '-';
+        if (starsEl) starsEl.innerHTML = '';
+      });
       if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:#999;">Belum ada data capaian pada periode ini.</td></tr>`;
       return;
     }
 
-    // 1. Ekstrak data & hitung gangguan kota untuk kolom Keterangan Tabel
+    const op = Number(pk.Operasional) || 0;
+    const pi = Number(pk.Piutang) || 0;
+    const lke = Number(pk.LKE) || 0;
+    const ikm = Number(pk.IKM) || 0;
+    const ipak = Number(pk.IPAK) || 0;
+    const pa = Number(pk.PrimaAksi) || 0;
+
+    // 1. Update Konten Teks Cards Berdasarkan ID Secara Presisi
+    if (document.getElementById('top_Operasional')) document.getElementById('top_Operasional').textContent = `${op}%`;
+    if (document.getElementById('badge_Operasional')) document.getElementById('badge_Operasional').textContent = this.hitungPredikat(op);
+
+    if (document.getElementById('top_Piutang')) document.getElementById('top_Piutang').textContent = `${pi}%`;
+    if (document.getElementById('badge_Piutang')) document.getElementById('badge_Piutang').textContent = this.hitungPredikat(pi);
+
+    if (document.getElementById('top_LKE')) document.getElementById('top_LKE').textContent = `${lke}%`;
+    if (document.getElementById('badge_LKE')) document.getElementById('badge_LKE').textContent = this.hitungPredikat(lke);
+
+    if (document.getElementById('top_IKM')) document.getElementById('top_IKM').textContent = ikm;
+    if (document.getElementById('stars_IKM')) document.getElementById('stars_IKM').innerHTML = this.renderBintang(ikm, 4);
+
+    if (document.getElementById('top_IPAK')) document.getElementById('top_IPAK').textContent = ipak;
+    if (document.getElementById('stars_IPAK')) document.getElementById('stars_IPAK').innerHTML = this.renderBintang(ipak, 10);
+
+    if (document.getElementById('top_PrimaAksi')) document.getElementById('top_PrimaAksi').textContent = `${pa}%`;
+    if (document.getElementById('badge_PrimaAksi')) document.getElementById('badge_PrimaAksi').textContent = pa >= 80 ? 'Baik' : 'Cukup';
+
+    // 2. Ekstrak data gangguan log stasiun kota untuk Keterangan Tabel
     let daftarSiteKendala = [];
     if (monitoringRows && monitoringRows.length > 0) {
       monitoringRows.forEach(r => {
@@ -170,55 +206,7 @@ const Dashboard = {
       ? `Terdapat kendala teknis pada site: ${daftarSiteKendala.join(' ')}` 
       : '✅ Semua stasiun monitoring beroperasi normal tanpa gangguan.';
 
-    const op = Number(pk.Operasional) || 0;
-    const pi = Number(pk.Piutang) || 0;
-    const lke = Number(pk.LKE) || 0;
-    const ikm = Number(pk.IKM) || 0;
-    const ipak = Number(pk.IPAK) || 0;
-    const pa = Number(pk.PrimaAksi) || 0;
-
-    // 2. Terapkan Layout Cards Berwarna & Ikon (Sesuai Struktur Gambar 2 di input.html sebelumnya)
-    grid.innerHTML = `
-      <div class="kpi-card card-blue">
-        <div class="kpi-icon"><i class="fa-solid fa-tower-broadcast"></i></div>
-        <div class="kpi-value">${op}%</div>
-        <div class="kpi-label">Operasional SMFR</div>
-        <span class="badge badge-blue">${this.hitungPredikat(op)}</span>
-      </div>
-      <div class="kpi-card card-green">
-        <div class="kpi-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-        <div class="kpi-value">${pi}%</div>
-        <div class="kpi-label">Pelayanan Piutang BHP</div>
-        <span class="badge badge-green">${this.hitungPredikat(pi)}</span>
-      </div>
-      <div class="kpi-card card-purple">
-        <div class="kpi-icon"><i class="fa-solid fa-shield-halved"></i></div>
-        <div class="kpi-value">${lke}%</div>
-        <div class="kpi-label">LKE Pembangunan ZI</div>
-        <span class="badge badge-purple">${this.hitungPredikat(lke)}</span>
-      </div>
-      <div class="kpi-card card-orange">
-        <div class="kpi-icon"><i class="fa-solid fa-face-smile"></i></div>
-        <div class="kpi-value">${ikm}</div>
-        <div class="kpi-label">IKM / IPKP</div>
-        <div class="stars">${this.renderBintang(ikm, 4)}</div>
-      </div>
-      <div class="kpi-card card-teal">
-        <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
-        <div class="kpi-value">${ipak}</div>
-        <div class="kpi-label">IIPP / IPAK</div>
-        <div class="stars">${this.renderBintang(ipak, 10)}</div>
-      </div>
-      <div class="kpi-card card-red">
-        <div class="kpi-icon"><i class="fa-solid fa-bullseye"></i></div>
-        <div class="kpi-value">${pa}%</div>
-        <div class="kpi-label">PrimaAksi</div>
-        <span class="badge badge-red">${pa >= 80 ? 'Baik' : 'Cukup'}</span>
-      </div>
-    `;
-
-    // 3. Terapkan Isian Baris ke Tabel Detail Secara Dinamis (Sesuai Layout Gambar 3)
-    const tbody = document.getElementById('tabelCapaianBody');
+    // 3. Terapkan Baris Data ke Tabel Detail
     if (tbody) {
       tbody.innerHTML = `
         <tr>
@@ -249,7 +237,6 @@ const Dashboard = {
     }
   },
 
-  // Sisa fungsi bawaan dibiarkan utuh agar fitur filter & pencarian tabel log tidak rusak
   renderSurvei(survei) {
     const box = document.getElementById('surveiBox');
     if (!survei) { box.innerHTML = `<div class="state-box">Belum ada data survei.</div>`; return; }
