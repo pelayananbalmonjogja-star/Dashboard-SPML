@@ -121,14 +121,14 @@ const Dashboard = {
       grid.innerHTML = `<div class="state-box">Belum ada data PK untuk periode ini.</div>`;
       return;
     }
-    const fields = [
-      { key: 'Operasional', unit: '%' },
-      { key: 'Piutang', unit: '%' },
-      { key: 'LKE', unit: '%' },
-      { key: 'IKM', unit: '' },
-      { key: 'IPAK', unit: '' },
-      { key: 'PrimaAksi', unit: '%' }
-    ];
+   const fields = [
+  { key: 'Operasional', unit: '%', label: 'Stasiun dan Perangkat Monitoring SMFR' },
+  { key: 'Piutang', unit: '%', label: 'Penyelenggaraan Layanan SOR (UNAR, BIMTEK dan Layanan MOTS)' },
+  { key: 'LKE', unit: '%', label: 'LKE Pembangunan ZI' },
+  { key: 'IKM', unit: '', label: 'IKM / IPKP' },
+  { key: 'IPAK', unit: '', label: 'IIPP / IPAK' },
+  { key: 'PrimaAksi', unit: '%', label: 'PrimaAksi' }
+];
 
     grid.innerHTML = fields.map(f => {
       const raw = pk[f.key];
