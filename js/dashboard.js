@@ -1,7 +1,7 @@
 /**
  * =======================================================
- *  DASHBOARD (PUBLIC, READ-ONLY)
- *  Membaca langsung dari Firestore, tanpa Apps Script.
+ * DASHBOARD (PUBLIC, READ-ONLY)
+ * Membaca langsung dari Firestore, tanpa Apps Script.
  * =======================================================
  */
 const Dashboard = {
@@ -56,7 +56,6 @@ const Dashboard = {
     selTahun.value = this.state.tahun;
     selBulan.value = this.state.bulan;
 
-    // saat ganti tahun, refresh daftar bulan yang tersedia untuk tahun itu
     selTahun.addEventListener('change', () => {
       const bulanList = periods.filter(p => p.tahun === selTahun.value).map(p => p.bulan);
       selBulan.innerHTML = bulanList.map(b => `<option value="${b}">${b}</option>`).join('');
@@ -101,8 +100,34 @@ const Dashboard = {
     document.getElementById('kpiGrid').innerHTML = `<div class="state-box error">⚠ ${Utils.escape(message)}</div>`;
   },
 
+  // Helper untuk menentukan Predikat Kinerja (Gambar 2)
+  hitungPredikat(nilai) {
+    if (nilai >= 95) return 'Sangat Baik';
+    if (nilai >= 85) return 'Baik';
+    if (nilai >= 70) return 'Cukup';
+    return 'Kurang';
+  },
+
+  // Helper untuk merender Bintang Kepuasan (Gambar 2)
+  renderBintang(skor, maxSkor = 4) {
+    const persentase = (skor / maxSkor) * 5; 
+    let starHtml = '';
+    for (let i = 1; i <= 5; i++) {
+      if (i <= Math.floor(persentase)) {
+        starHtml += '<i class="fa-solid fa-star" style="color: #ffb100;"></i>';
+      } else if (i - 0.5 <= persentase) {
+        starHtml += '<i class="fa-solid fa-star-half-stroke" style="color: #ffb100;"></i>';
+      } else {
+        starHtml += '<i class="fa-regular fa-star" style="color: #ccc;"></i>';
+      }
+    }
+    return starHtml;
+  },
+
   renderAll(data) {
-    this.renderKpi(data.pk);
+    // Jalankan render grid atas & tabel detail
+    this.renderKpiGayaBaru(data.pk, data.monitoring);
+    
     Charts.renderGauge('gaugeCanvas', data.pk ? data.pk.Operasional : 0);
     if (data.primaaksi) {
       Charts.renderPie('pieCanvas',
@@ -115,46 +140,116 @@ const Dashboard = {
     this.renderKegiatan(data.kegiatan);
   },
 
-  renderKpi(pk) {
+  // MENGGANTIKAN FUNGSI RENDER KPI LAMA DENGAN STRUKTUR BERLOGO DAN TABEL DETAIL
+  renderKpiGayaBaru(pk, monitoringRows) {
     const grid = document.getElementById('kpiGrid');
+    const tableHeaderBulan = document.getElementById('th-bulan-ini');
+    
+    if (tableHeaderBulan) {
+      tableHeaderBulan.textContent = `Capaian Bulan ${this.state.bulan} ${this.state.tahun}`;
+    }
+
     if (!pk) {
       grid.innerHTML = `<div class="state-box">Belum ada data PK untuk periode ini.</div>`;
+      const tbody = document.getElementById('tabelCapaianBody');
+      if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:#999;">Belum ada data capaian pada periode ini.</td></tr>`;
       return;
     }
-    const fields = [
-      { key: 'Operasional', unit: '%' },
-      { key: 'Piutang', unit: '%' },
-      { key: 'LKE', unit: '%' },
-      { key: 'IKM', unit: '' },
-      { key: 'IPAK', unit: '' },
-      { key: 'PrimaAksi', unit: '%' }
-    ];
 
-    grid.innerHTML = fields.map(f => {
-      const raw = pk[f.key];
-      const value = Number(raw) || 0;
-      const isPercentLike = f.unit === '%';
-      const pct = isPercentLike ? value : Math.min(100, value * 10); // skala kasar utk ring non-persen (mis. IKM 0-10)
-      const status = pct >= 90 ? 'success' : pct >= 75 ? 'warning' : 'danger';
-      const color = status === 'success' ? 'var(--green)' : status === 'warning' ? 'var(--orange)' : 'var(--red)';
+    // 1. Ekstrak data & hitung gangguan kota untuk kolom Keterangan Tabel
+    let daftarSiteKendala = [];
+    if (monitoringRows && monitoringRows.length > 0) {
+      monitoringRows.forEach(r => {
+        if (String(r.status).toLowerCase() !== 'normal') {
+          daftarSiteKendala.push(`<span class="site-tag"><i class="fa-solid fa-location-dot"></i> ${Utils.escape(r.site)} (${Utils.escape(r.status)})</span>`);
+        }
+      });
+    }
 
-      return `
-        <div class="kpi-card" data-status="${status}">
-          <div class="kpi-top">
-            <span class="kpi-label">${f.key}</span>
-            <div class="kpi-ring" style="--pct:${pct}; --ring-color:${color};">
-              <div class="kpi-ring-inner">${Math.round(pct)}</div>
-            </div>
-          </div>
-          <div class="kpi-value" data-count-to="${value}">0${isPercentLike ? '<span class="unit">%</span>' : ''}</div>
-          <div class="kpi-bar"><div class="kpi-bar-fill" style="background:${color};" data-target-width="${pct}%"></div></div>
-        </div>`;
-    }).join('');
+    let keteranganOperasional = daftarSiteKendala.length > 0 
+      ? `Terdapat kendala teknis pada site: ${daftarSiteKendala.join(' ')}` 
+      : '✅ Semua stasiun monitoring beroperasi normal tanpa gangguan.';
 
-    Utils.animateCounters(grid);
-    Utils.animateBars(grid);
+    const op = Number(pk.Operasional) || 0;
+    const pi = Number(pk.Piutang) || 0;
+    const lke = Number(pk.LKE) || 0;
+    const ikm = Number(pk.IKM) || 0;
+    const ipak = Number(pk.IPAK) || 0;
+    const pa = Number(pk.PrimaAksi) || 0;
+
+    // 2. Terapkan Layout Cards Berwarna & Ikon (Sesuai Struktur Gambar 2 di input.html sebelumnya)
+    grid.innerHTML = `
+      <div class="kpi-card card-blue">
+        <div class="kpi-icon"><i class="fa-solid fa-tower-broadcast"></i></div>
+        <div class="kpi-value">${op}%</div>
+        <div class="kpi-label">Operasional SMFR</div>
+        <span class="badge badge-blue">${this.hitungPredikat(op)}</span>
+      </div>
+      <div class="kpi-card card-green">
+        <div class="kpi-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+        <div class="kpi-value">${pi}%</div>
+        <div class="kpi-label">Pelayanan Piutang BHP</div>
+        <span class="badge badge-green">${this.hitungPredikat(pi)}</span>
+      </div>
+      <div class="kpi-card card-purple">
+        <div class="kpi-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="kpi-value">${lke}%</div>
+        <div class="kpi-label">LKE Pembangunan ZI</div>
+        <span class="badge badge-purple">${this.hitungPredikat(lke)}</span>
+      </div>
+      <div class="kpi-card card-orange">
+        <div class="kpi-icon"><i class="fa-solid fa-face-smile"></i></div>
+        <div class="kpi-value">${ikm}</div>
+        <div class="kpi-label">IKM / IPKP</div>
+        <div class="stars">${this.renderBintang(ikm, 4)}</div>
+      </div>
+      <div class="kpi-card card-teal">
+        <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="kpi-value">${ipak}</div>
+        <div class="kpi-label">IIPP / IPAK</div>
+        <div class="stars">${this.renderBintang(ipak, 10)}</div>
+      </div>
+      <div class="kpi-card card-red">
+        <div class="kpi-icon"><i class="fa-solid fa-bullseye"></i></div>
+        <div class="kpi-value">${pa}%</div>
+        <div class="kpi-label">PrimaAksi</div>
+        <span class="badge badge-red">${pa >= 80 ? 'Baik' : 'Cukup'}</span>
+      </div>
+    `;
+
+    // 3. Terapkan Isian Baris ke Tabel Detail Secara Dinamis (Sesuai Layout Gambar 3)
+    const tbody = document.getElementById('tabelCapaianBody');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td style="text-align:center;">1.</td>
+          <td><strong>Persentase (%) Terjaganya Operasional dan Fungsi Monitoring dari Stasiun Monitor Frekuensi Radio di UPT</strong></td>
+          <td style="text-align:center; color:#555; font-weight:600;">85%</td>
+          <td style="text-align:center; font-weight:700; color:#0056b3;">${op}%</td>
+          <td style="text-align:center; font-weight:700;">${op}%</td>
+          <td><div class="keterangan-cell">${keteranganOperasional}</div></td>
+        </tr>
+        <tr>
+          <td style="text-align:center;">2.</td>
+          <td><strong>Persentase Tingkat Penyelesaian Pelayanan Piutang BHP Frekuensi Radio</strong></td>
+          <td style="text-align:center; color:#555; font-weight:600;">100%</td>
+          <td style="text-align:center; font-weight:700; color:#0056b3;">${pi}%</td>
+          <td style="text-align:center; font-weight:700;">${pi}%</td>
+          <td><div class="keterangan-cell">Realisasi penagihan piutang berjalan tertib.</div></td>
+        </tr>
+        <tr>
+          <td style="text-align:center;">3.</td>
+          <td><strong>Nilai Lembar Kerja Evaluasi (LKE) Pembangunan Zona Integritas</strong></td>
+          <td style="text-align:center; color:#555; font-weight:600;">100%</td>
+          <td style="text-align:center; font-weight:700; color:#0056b3;">${lke}%</td>
+          <td style="text-align:center; font-weight:700;">${lke}%</td>
+          <td><div class="keterangan-cell">Pemenuhan administrasi ZI tercapai sesuai target.</div></td>
+        </tr>
+      `;
+    }
   },
 
+  // Sisa fungsi bawaan dibiarkan utuh agar fitur filter & pencarian tabel log tidak rusak
   renderSurvei(survei) {
     const box = document.getElementById('surveiBox');
     if (!survei) { box.innerHTML = `<div class="state-box">Belum ada data survei.</div>`; return; }
