@@ -56,8 +56,11 @@
   <nav class="tab-nav">
     <button class="tab-btn active" data-target="tabPK">Monitoring dan Evaluasi Capaian Perjanjian Kinerja</button>
     <button class="tab-btn" data-target="tabSurvei">Pelaksanaan Survey Kepuasan Pelayanan Publik</button>
+    <button class="tab-btn" data-target="tabTamu">Jumlah Tamu Pelayanan</button>
     <button class="tab-btn" data-target="tabPrimaaksi">Tindak Lanjut Verifikasi Site ISR Microwave Link</button>
     <button class="tab-btn" data-target="tabMonitoring">Kondisi Stasiun Monitoring SMFR</button>
+    <button class="tab-btn" data-target="tabIsr">Penerbitan dan Pencabutan ISR</button>
+    <button class="tab-btn" data-target="tabSpp">Penerbitan SPP BHP</button>
     <button class="tab-btn" data-target="tabPelayanan">Realisasi Kegiatan SPML</button>
     <button class="tab-btn" data-target="tabKegiatan">Rencana Kegiatan</button>
   </nav>
@@ -106,6 +109,26 @@
       </div>
     </div>
 
+    <!-- ============ TAB TAMU PELAYANAN ============ -->
+    <div class="tab-panel" id="tabTamu">
+      <div class="form-card">
+        <h3>Jumlah Tamu Pelayanan</h3>
+        <p class="hint">Satu data mewakili satu periode (Tahun + Bulan). Isi ulang di periode yang sama untuk update.</p>
+        <form id="formTamu">
+          <div class="form-row">
+            <div class="field"><label>Tahun</label><input type="number" id="tamuTahun" class="tahun-input" required></div>
+            <div class="field"><label>Bulan</label><select id="tamuBulan" class="bulan-select" required></select></div>
+            <div class="field"><label>Jumlah Tamu Broadcast</label><input type="number" id="formTamu_TamuBroadcast" required></div>
+            <div class="field"><label>Jumlah Tamu Non Broadcast</label><input type="number" id="formTamu_TamuNonBroadcast" required></div>
+            <div class="field"><label>Jumlah Pelayanan Online</label><input type="number" id="formTamu_PelayananOnline" required></div>
+            <div class="field"><label>Jumlah Pelayanan Offline</label><input type="number" id="formTamu_PelayananOffline" required></div>
+          </div>
+          <div class="form-status" id="tamuStatus"></div>
+          <div class="form-actions"><button type="submit" class="btn-primary">Simpan</button></div>
+        </form>
+      </div>
+    </div>
+
     <!-- ============ TAB PRIMA AKSI ============ -->
     <div class="tab-panel" id="tabPrimaaksi">
       <div class="form-card">
@@ -146,6 +169,44 @@
         <div class="form-status" id="monitoringStatus"></div>
         <div class="form-actions"><button type="button" id="btnSimpanSite" class="btn-primary">Simpan Data Site &amp; Total</button></div>
         <div class="mini-list" id="monitoringList"></div>
+      </div>
+    </div>
+
+    <!-- ============ TAB PENERBITAN & PENCABUTAN ISR ============ -->
+    <div class="tab-panel" id="tabIsr">
+      <div class="form-card">
+        <h3>Penerbitan dan Pencabutan ISR</h3>
+        <p class="hint">Satu data mewakili satu periode (Tahun + Bulan). Isi ulang di periode yang sama untuk update.</p>
+        <form id="formIsrTerbit">
+          <div class="form-row">
+            <div class="field"><label>Tahun</label><input type="number" id="isrTerbitTahun" class="tahun-input" required></div>
+            <div class="field"><label>Bulan</label><select id="isrTerbitBulan" class="bulan-select" required></select></div>
+            <div class="field"><label>Jumlah Terbit ISR</label><input type="number" id="formIsrTerbit_Terbit" required></div>
+            <div class="field"><label>Jumlah ISR Tercabut</label><input type="number" id="formIsrTerbit_Cabut" required></div>
+          </div>
+          <div class="form-status" id="isrTerbitStatus"></div>
+          <div class="form-actions"><button type="submit" class="btn-primary">Simpan</button></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ============ TAB PENERBITAN SPP BHP ============ -->
+    <div class="tab-panel" id="tabSpp">
+      <div class="form-card">
+        <h3>Penerbitan SPP BHP</h3>
+        <p class="hint">Satu data mewakili satu periode (Tahun + Bulan). Isi ulang di periode yang sama untuk update.</p>
+        <form id="formSpp">
+          <div class="form-row">
+            <div class="field"><label>Tahun</label><input type="number" id="sppTahun" class="tahun-input" required></div>
+            <div class="field"><label>Bulan</label><select id="sppBulan" class="bulan-select" required></select></div>
+            <div class="field"><label>Jumlah SPP Annual</label><input type="number" id="formSpp_SPPAnnual" required></div>
+            <div class="field"><label>Jumlah SPP Reminder</label><input type="number" id="formSpp_SPPReminder" required></div>
+            <div class="field"><label>Jumlah SPP New</label><input type="number" id="formSpp_SPPNew" required></div>
+            <div class="field"><label>Jumlah SPP Renewal</label><input type="number" id="formSpp_SPPRenewal" required></div>
+          </div>
+          <div class="form-status" id="sppStatus"></div>
+          <div class="form-actions"><button type="submit" class="btn-primary">Simpan</button></div>
+        </form>
       </div>
     </div>
 
