@@ -16,11 +16,12 @@ const Charts = {
     gray: '#E5E7EB'
   },
 
-  renderGauge(canvasId, value) {
+  renderGauge(canvasId, value, label) {
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
     const pct = Math.max(0, Math.min(100, Number(value) || 0));
     const color = pct >= 90 ? this.colors.green : pct >= 75 ? this.colors.orange : this.colors.red;
+    const centerLabel = label || 'Operasional';
 
     if (this.gauge) this.gauge.destroy();
     this.gauge = new Chart(ctx, {
@@ -52,25 +53,27 @@ const Charts = {
           ctx.textAlign = 'center';
           ctx.fillStyle = '#0B2C56';
           ctx.font = '700 26px Plus Jakarta Sans, sans-serif';
-          ctx.fillText(pct.toFixed(1) + '%', x, y);
+          ctx.fillText(pct.toFixed(2) + '%', x, y);
           ctx.font = '600 11px Inter, sans-serif';
           ctx.fillStyle = '#6B7280';
-          ctx.fillText('Operasional', x, y + 16);
+          ctx.fillText(centerLabel, x, y + 16);
           ctx.restore();
         }
       }]
     });
   },
 
-  renderPie(canvasId, labels, values) {
+  /** opts: { showLegend: bool (default true), colors: [...] } */
+  renderPie(canvasId, labels, values, opts) {
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
     if (this.pie) this.pie.destroy();
+    opts = opts || {};
 
-    const palette = [this.colors.green, this.colors.red, this.colors.orange, this.colors.navy, '#8B5CF6'];
+    const palette = opts.colors || [this.colors.green, this.colors.red, this.colors.orange, this.colors.navy, '#8B5CF6'];
 
     this.pie = new Chart(ctx, {
-      type: 'doughnut',
+      type: 'pie',
       data: {
         labels,
         datasets: [{
@@ -83,8 +86,7 @@ const Charts = {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '58%',
-        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11.5 } } } },
+        plugins: { legend: { display: opts.showLegend !== false, position: 'bottom', labels: { boxWidth: 10, font: { size: 11.5 } } } },
         animation: { duration: 800 }
       }
     });
