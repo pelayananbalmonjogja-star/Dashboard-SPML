@@ -139,13 +139,13 @@ const Dashboard = {
       const color = status === 'success' ? 'var(--green)' : status === 'warning' ? 'var(--orange)' : 'var(--red)';
 
       return `
-        <div class="kpi-card" data-status="${status}">
-          <div class="kpi-top">
-            <span class="kpi-label">${f.key}</span>
-            <div class="kpi-ring" style="--pct:${pct}; --ring-color:${color};">
-              <div class="kpi-ring-inner">${Math.round(pct)}</div>
-            </div>
-          </div>
+  <div class="kpi-card" data-status="${status}">
+    <div class="kpi-top">
+      <span class="kpi-label">${f.label}</span> 
+      <div class="kpi-ring" style="--pct:${pct}; --ring-color:${color};">
+        <div class="kpi-ring-inner">${Math.round(pct)}</div>
+      </div>
+    </div>
           <div class="kpi-value" data-count-to="${value}">0${isPercentLike ? '<span class="unit">%</span>' : ''}</div>
           <div class="kpi-bar"><div class="kpi-bar-fill" style="background:${color};" data-target-width="${pct}%"></div></div>
         </div>`;
