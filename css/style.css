@@ -624,3 +624,246 @@ footer {
 }
 .btn-icon.btn-edit:hover { background: rgba(11,44,86,0.1); color: var(--navy); }
 .btn-icon.btn-delete:hover { background: rgba(220,38,38,0.1); color: var(--red); }
+
+/* =========================================================
+   REDESIGN — DASHBOARD PK (sidebar layout, kartu warna-warni)
+   Semua class diawali "pk-" supaya tidak bentrok dengan input.html
+   ========================================================= */
+
+.pk-body { margin: 0; background: var(--gray-bg); }
+
+.pk-shell { display: flex; min-height: 100vh; }
+
+/* ---------- Sidebar ---------- */
+.pk-sidebar {
+  width: 250px;
+  flex-shrink: 0;
+  background: var(--white);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  transition: margin-left .2s ease;
+  z-index: 60;
+}
+.pk-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.pk-sidebar-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--navy);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.pk-sidebar-title { font-weight: 800; color: var(--navy); font-size: 14.5px; line-height: 1.3; }
+.pk-sidebar-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.pk-nav { padding: 14px 12px; display: flex; flex-direction: column; gap: 2px; }
+.pk-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: background .15s ease, color .15s ease;
+}
+.pk-nav-item i { width: 18px; text-align: center; color: var(--text-muted); }
+.pk-nav-item:hover { background: var(--gray-bg); }
+.pk-nav-item.active { background: rgba(11,44,86,0.08); color: var(--navy); }
+.pk-nav-item.active i { color: var(--navy); }
+
+/* ---------- Main area ---------- */
+.pk-main { flex: 1; min-width: 0; }
+
+.pk-topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 26px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+.pk-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--navy);
+  cursor: pointer;
+}
+.pk-topbar-brand { display: flex; align-items: center; gap: 10px; }
+.pk-topbar-logo {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--navy); color: var(--white);
+  display: flex; align-items: center; justify-content: center; font-size: 15px;
+}
+.pk-topbar-title { font-weight: 800; color: var(--navy); font-size: 15px; }
+.pk-topbar-sub { font-size: 11px; color: var(--text-muted); }
+
+.pk-topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.pk-periode-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--gray-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--navy);
+}
+.pk-periode-pill i { color: var(--text-muted); }
+.pk-periode-label { font-weight: 600; color: var(--text-muted); font-size: 12px; }
+.pk-periode-pill select {
+  border: none; background: transparent; font-weight: 700; color: var(--navy);
+  font-size: 13.5px; outline: none; cursor: pointer;
+}
+.pk-icon-btn {
+  width: 38px; height: 38px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--white);
+  color: var(--navy); cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s ease;
+}
+.pk-icon-btn:hover { background: var(--gray-bg); }
+
+.pk-content { max-width: 1400px; margin: 0 auto; padding: 24px 26px 60px; }
+
+.pk-page-header { margin-bottom: 22px; }
+.pk-page-header h1 { margin: 0; font-size: 22px; color: var(--navy); letter-spacing: .3px; }
+.pk-page-header p { margin: 4px 0 0; font-size: 13px; color: var(--text-muted); }
+
+/* ---------- KPI cards (colorful) ---------- */
+.pk-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.pk-kpi-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 16px;
+  text-align: center;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.pk-kpi-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.pk-kpi-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; margin: 0 auto 12px;
+}
+.pk-kpi-value { font-size: 26px; font-weight: 800; color: var(--navy); }
+.pk-kpi-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; min-height: 32px; }
+.pk-kpi-stars { color: var(--orange); font-size: 14px; margin-top: 6px; letter-spacing: 2px; }
+.pk-pill { display: inline-block; margin-top: 10px; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.pk-pill-success { background: rgba(22,163,74,0.12); color: var(--green); }
+.pk-pill-warning { background: rgba(245,158,11,0.15); color: #B45309; }
+.pk-pill-danger { background: rgba(220,38,38,0.12); color: var(--red); }
+
+/* ---------- Rows / panels ---------- */
+.pk-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+@media (max-width: 950px) { .pk-row { grid-template-columns: 1fr; } }
+
+.pk-panel {
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+}
+.pk-panel-wide { margin-bottom: 18px; }
+.pk-panel h3 { margin: 0 0 16px; font-size: 14.5px; color: var(--navy); font-weight: 700; }
+
+.pk-gauge-wrap { position: relative; height: 200px; }
+.pk-gauge-target { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: -6px; margin-bottom: 14px; }
+.pk-subheading { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .3px; margin-bottom: 8px; }
+.pk-site-list { display: flex; flex-direction: column; gap: 8px; max-height: 160px; overflow-y: auto; }
+.pk-site-row { display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 6px 2px; }
+.pk-site-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.pk-site-status { margin-left: auto; font-weight: 700; font-size: 12px; }
+
+.pk-pie-row { display: flex; align-items: center; gap: 18px; }
+.pk-pie-wrap { width: 150px; height: 150px; flex-shrink: 0; position: relative; }
+.pk-pie-legend { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.pk-legend-item { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.pk-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.pk-legend-text strong { display: block; color: var(--navy); font-size: 14px; }
+.pk-legend-text span { color: var(--text-muted); font-size: 11.5px; }
+
+.pk-progress-box { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
+.pk-progress-label { font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+.pk-progress-value { font-size: 26px; font-weight: 800; color: var(--navy); margin: 4px 0 8px; }
+.pk-progress-total { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+
+/* ---------- Survey ---------- */
+.pk-survey-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(120px,1fr)); gap: 14px; }
+.pk-survey-card { text-align: center; padding: 14px 10px; background: var(--gray-bg); border-radius: var(--radius-sm); }
+.pk-survey-value { font-size: 24px; font-weight: 800; color: var(--navy); }
+.pk-survey-label { font-size: 11.5px; color: var(--text-muted); margin: 4px 0 6px; text-transform: uppercase; }
+.pk-survey-stars { color: var(--orange); font-size: 14px; letter-spacing: 2px; }
+
+/* ---------- Pelayanan cards ---------- */
+.pk-pelayanan-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(120px,1fr)); gap: 14px; }
+.pk-pelayanan-card { text-align: center; padding: 14px 10px; background: var(--gray-bg); border-radius: var(--radius-sm); }
+.pk-pelayanan-icon { width: 40px; height: 40px; border-radius: 50%; background: var(--navy); color: #fff; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-size: 15px; }
+.pk-pelayanan-value { font-size: 20px; font-weight: 800; color: var(--navy); }
+.pk-pelayanan-label { font-size: 11px; color: var(--text-muted); margin: 2px 0 4px; }
+.pk-pelayanan-target { font-size: 11px; color: var(--text-muted); }
+
+/* ---------- Realisasi table ---------- */
+.pk-table-wrap { overflow-x: auto; }
+.pk-realisasi-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.pk-realisasi-table th {
+  background: var(--navy); color: #fff; text-align: left; padding: 10px 12px;
+  font-size: 11.5px; text-transform: uppercase; letter-spacing: .3px; font-weight: 600;
+}
+.pk-realisasi-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.pk-realisasi-table tr:hover td { background: var(--gray-bg); }
+.pk-realisasi-note-ok { color: var(--text-muted); }
+.pk-realisasi-note-bad { color: var(--red); font-weight: 600; }
+
+.pk-footnote {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: rgba(11,44,86,0.06);
+  border: 1px solid rgba(11,44,86,0.12);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-size: 12.5px;
+  color: var(--navy);
+  margin-top: 6px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 880px) {
+  .pk-sidebar { position: fixed; left: 0; margin-left: -250px; box-shadow: var(--shadow-lg); }
+  .pk-sidebar.open { margin-left: 0; }
+  .pk-hamburger { display: block; }
+  .pk-topbar-sub { display: none; }
+  .pk-periode-label { display: none; }
+}
