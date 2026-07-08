@@ -1,28 +1,38 @@
 /**
  * =======================================================
- * DASHBOARD (PUBLIC, READ-ONLY)
- * Membaca langsung dari Firestore, tanpa Apps Script.
+ *  DASHBOARD (PUBLIC, READ-ONLY) — REDESIGN
+ *  Membaca langsung dari Firestore. Skema data TIDAK berubah,
+ *  hanya tampilannya yang dirombak mengikuti desain baru.
  * =======================================================
  */
+const TARGET_OPERASIONAL = 85; // target garis acuan gauge Operasional (%)
+
 const Dashboard = {
   state: { tahun: '', bulan: '', dataTable: null },
 
   async init() {
-    document.getElementById('appName').textContent = APP_NAME;
-    document.getElementById('appSubtitle').textContent = APP_SUBTITLE;
+    this.setupSidebarToggle();
 
     document.getElementById('btnRefresh').addEventListener('click', () => this.loadData());
-    document.getElementById('selTahun').addEventListener('change', (e) => {
-      this.state.tahun = e.target.value;
-      this.loadData();
-    });
-    document.getElementById('selBulan').addEventListener('change', (e) => {
-      this.state.bulan = e.target.value;
+    document.getElementById('selPeriode').addEventListener('change', (e) => {
+      const [tahun, bulan] = e.target.value.split('|');
+      this.state.tahun = tahun;
+      this.state.bulan = bulan;
       this.loadData();
     });
 
     await this.loadPeriods();
     await this.loadData();
+  },
+
+  setupSidebarToggle() {
+    const btn = document.getElementById('btnSidebarToggle');
+    const sidebar = document.getElementById('pkSidebar');
+    if (!btn || !sidebar) return;
+    btn.addEventListener('click', () => sidebar.classList.toggle('open'));
+    document.querySelectorAll('.pk-nav-item').forEach(a => {
+      a.addEventListener('click', () => sidebar.classList.remove('open'));
+    });
   },
 
   showLoading(show) {
@@ -35,50 +45,40 @@ const Dashboard = {
     snap.forEach(doc => periods.push(doc.data()));
     periods = Utils.sortPeriods(periods);
 
-    const tahunSet = [...new Set(periods.map(p => p.tahun))];
-    const selTahun = document.getElementById('selTahun');
-    const selBulan = document.getElementById('selBulan');
-
-    if (tahunSet.length === 0) {
-      selTahun.innerHTML = '<option value="">-</option>';
-      selBulan.innerHTML = '<option value="">-</option>';
+    const sel = document.getElementById('selPeriode');
+    if (periods.length === 0) {
+      sel.innerHTML = '<option value="">-</option>';
       return;
     }
 
-    selTahun.innerHTML = tahunSet.map(t => `<option value="${t}">${t}</option>`).join('');
+    // urutan terbaru dulu di dropdown
+    const reversed = [...periods].reverse();
+    sel.innerHTML = reversed.map(p => `<option value="${p.tahun}|${p.bulan}">${p.bulan} ${p.tahun}</option>`).join('');
+
     const lastPeriod = periods[periods.length - 1];
     this.state.tahun = lastPeriod.tahun;
     this.state.bulan = lastPeriod.bulan;
-
-    const bulanForTahun = periods.filter(p => p.tahun === this.state.tahun).map(p => p.bulan);
-    selBulan.innerHTML = bulanForTahun.map(b => `<option value="${b}">${b}</option>`).join('');
-
-    selTahun.value = this.state.tahun;
-    selBulan.value = this.state.bulan;
-
-    // saat ganti tahun, refresh daftar bulan yang tersedia untuk tahun itu
-    selTahun.addEventListener('change', () => {
-      const bulanList = periods.filter(p => p.tahun === selTahun.value).map(p => p.bulan);
-      selBulan.innerHTML = bulanList.map(b => `<option value="${b}">${b}</option>`).join('');
-      this.state.bulan = selBulan.value;
-    });
+    sel.value = `${lastPeriod.tahun}|${lastPeriod.bulan}`;
   },
 
   async loadData() {
     if (!this.state.tahun || !this.state.bulan) {
-      this.renderError('Belum ada data. Silakan input data dulu di halaman Input Data.');
+      this.renderError('Belum ada data. Silakan input data dulu di halaman Data Bulanan.');
       return;
     }
     this.showLoading(true);
     try {
-      const id = periodeId(this.state.tahun, this.state.bulan);
-      const [pkSnap, surveiSnap, primaaksiSnap, monitoringSnap, pelayananSnap, kegiatanSnap] = await Promise.all([
+      const { tahun, bulan } = this.state;
+      const id = periodeId(tahun, bulan);
+
+      const [pkSnap, surveiSnap, primaaksiSnap, monitoringSnap, pelayananSnap, kegiatanSnap, pelayananYearSnap] = await Promise.all([
         db.collection('pk').doc(id).get(),
         db.collection('survei').doc(id).get(),
         db.collection('primaaksi').doc(id).get(),
-        db.collection('monitoring').where('tahun', '==', this.state.tahun).where('bulan', '==', this.state.bulan).get(),
-        db.collection('pelayanan').where('tahun', '==', this.state.tahun).where('bulan', '==', this.state.bulan).get(),
-        db.collection('kegiatan').where('tahun', '==', this.state.tahun).where('bulan', '==', this.state.bulan).get()
+        db.collection('monitoring').where('tahun', '==', tahun).where('bulan', '==', bulan).get(),
+        db.collection('pelayanan').where('tahun', '==', tahun).where('bulan', '==', bulan).get(),
+        db.collection('kegiatan').where('tahun', '==', tahun).where('bulan', '==', bulan).get(),
+        db.collection('pelayanan').where('tahun', '==', tahun).get()
       ]);
 
       const pk = pkSnap.exists ? pkSnap.data() : null;
@@ -87,8 +87,9 @@ const Dashboard = {
       const monitoring = []; monitoringSnap.forEach(d => monitoring.push(d.data()));
       const pelayanan = []; pelayananSnap.forEach(d => pelayanan.push({ id: d.id, ...d.data() }));
       const kegiatan = []; kegiatanSnap.forEach(d => kegiatan.push({ id: d.id, ...d.data() }));
+      const pelayananYear = []; pelayananYearSnap.forEach(d => pelayananYear.push(d.data()));
 
-      this.renderAll({ pk, survei, primaaksi, monitoring, pelayanan, kegiatan });
+      this.renderAll({ pk, survei, primaaksi, monitoring, pelayanan, kegiatan, pelayananYear });
     } catch (err) {
       console.error(err);
       this.renderError(err.message);
@@ -98,134 +99,241 @@ const Dashboard = {
   },
 
   renderError(message) {
-    document.getElementById('kpiGrid').innerHTML = `<div class="state-box error">⚠ ${Utils.escape(message)}</div>`;
+    document.getElementById('section-kpi').innerHTML = `<div class="state-box error">⚠ ${Utils.escape(message)}</div>`;
   },
 
   renderAll(data) {
-    this.renderKpi(data.pk);
-    
-    // Memastikan grafik gauge mengambil key 'Operasional' (Huruf O besar) secara konsisten
-    Charts.renderGauge('gaugeCanvas', data.pk ? (data.pk.Operasional || 0) : 0);
-    
-    if (data.primaaksi) {
-      Charts.renderPie('pieCanvas',
-        ['Sesuai', 'Tidak Sesuai'],
-        [Number(data.primaaksi.Sesuai) || 0, Number(data.primaaksi.Tidak) || 0]);
-    }
-    this.renderSurvei(data.survei);
+    this.renderKpi(data.pk, data.survei);
+    this.renderOperasional(data.pk, data.monitoring);
+    this.renderPrimaaksi(data.primaaksi, data.pk);
+    this.renderSurvey(data.survei);
     this.renderPelayanan(data.pelayanan);
-    this.renderMonitoring(data.monitoring);
-    this.renderKegiatan(data.kegiatan);
+    this.renderRealisasi(data.pelayanan, data.pelayananYear);
+    this.renderKegiatanLog(data.kegiatan);
+    this.renderFootnote();
   },
 
-  renderKpi(pk) {
-    const grid = document.getElementById('kpiGrid');
+  /* ---------------- helpers ---------------- */
+  starsHtml(value, max) {
+    const ratio = Math.max(0, Math.min(1, (Number(value) || 0) / max));
+    const total = ratio * 5;
+    const full = Math.floor(total);
+    const half = (total - full) >= 0.5;
+    let html = '';
+    for (let i = 0; i < 5; i++) {
+      if (i < full) html += '<i class="fa-solid fa-star"></i>';
+      else if (i === full && half) html += '<i class="fa-solid fa-star-half-stroke"></i>';
+      else html += '<i class="fa-regular fa-star"></i>';
+    }
+    return html;
+  },
+
+  pillFor(pct) {
+    if (pct >= 90) return { text: 'Sangat Baik', cls: 'pk-pill-success' };
+    if (pct >= 75) return { text: 'Baik', cls: 'pk-pill-warning' };
+    return { text: 'Perlu Perhatian', cls: 'pk-pill-danger' };
+  },
+
+  /* ---------------- KPI CARDS ---------------- */
+  renderKpi(pk, survei) {
+    const grid = document.getElementById('section-kpi');
     if (!pk) {
       grid.innerHTML = `<div class="state-box">Belum ada data PK untuk periode ini.</div>`;
       return;
     }
     const fields = [
-      { key: 'Operasional', unit: '%', label: 'Stasiun dan Perangkat Monitoring SMFR' },
-      { key: 'Piutang', unit: '%', label: 'Penyelenggaraan Layanan SOR (UNAR, BIMTEK dan Layanan MOTS)' },
-      { key: 'LKE', unit: '%', label: 'LKE Pembangunan ZI' },
-      { key: 'IKM', unit: '', label: 'IKM / IPKP' },
-      { key: 'IPAK', unit: '', label: 'IIPP / IPAK' },
-      { key: 'PrimaAksi', unit: '%', label: 'PrimaAksi' }
+      { key: 'Operasional', label: 'Operasional SMFR', icon: 'fa-tower-broadcast', color: '#2563EB', type: 'percent' },
+      { key: 'Piutang', label: 'Pelayanan Piutang BHP', icon: 'fa-file-circle-check', color: '#16A34A', type: 'percent' },
+      { key: 'LKE', label: 'LKE Pembangunan ZI', icon: 'fa-shield-halved', color: '#7C3AED', type: 'percent' },
+      { key: 'IKM', label: 'IKM / IPKP', icon: 'fa-face-smile', color: '#F59E0B', type: 'star', max: 4 },
+      { key: 'IPAK', label: 'IIPP / IPAK', icon: 'fa-shield-heart', color: '#0D9488', type: 'star', max: 10 },
+      { key: 'PrimaAksi', label: 'PrimaAksi', icon: 'fa-bullseye', color: '#DC2626', type: 'percent' }
     ];
 
     grid.innerHTML = fields.map(f => {
       const raw = pk[f.key];
       const value = Number(raw) || 0;
-      const isPercentLike = f.unit === '%';
-      
-      // Rumus diperbarui: Jika non-persen (IKM & IPAK skala maksimal 4), nilai dibagi 4 lalu dikali 100 agar kalkulasi warna ring tepat
-      const pct = isPercentLike ? value : Math.min(100, (value / 4) * 100); 
-      
-      const status = pct >= 90 ? 'success' : pct >= 75 ? 'warning' : 'danger';
-      const color = status === 'success' ? 'var(--green)' : status === 'warning' ? 'var(--orange)' : 'var(--red)';
 
+      if (f.type === 'star') {
+        return `
+          <div class="pk-kpi-card">
+            <div class="pk-kpi-icon" style="background:${f.color}22; color:${f.color};"><i class="fa-solid ${f.icon}"></i></div>
+            <div class="pk-kpi-value">${value}</div>
+            <div class="pk-kpi-label">${f.label}</div>
+            <div class="pk-kpi-stars">${this.starsHtml(value, f.max)}</div>
+          </div>`;
+      }
+
+      const pill = this.pillFor(value);
       return `
-        <div class="kpi-card" data-status="${status}">
-          <div class="kpi-top">
-            <span class="kpi-label">${f.label}</span> 
-            <div class="kpi-ring" style="--pct:${pct}; --ring-color:${color};">
-              <div class="kpi-ring-inner">${Math.round(pct)}</div>
-            </div>
-          </div>
-          <div class="kpi-value" data-count-to="${value}">0${isPercentLike ? '<span class="unit">%</span>' : ''}</div>
-          <div class="kpi-bar"><div class="kpi-bar-fill" style="background:${color};" data-target-width="${pct}%"></div></div>
+        <div class="pk-kpi-card">
+          <div class="pk-kpi-icon" style="background:${f.color}22; color:${f.color};"><i class="fa-solid ${f.icon}"></i></div>
+          <div class="pk-kpi-value">${value}%</div>
+          <div class="pk-kpi-label">${f.label}</div>
+          <span class="pk-pill ${pill.cls}">${pill.text}</span>
         </div>`;
     }).join('');
-
-    Utils.animateCounters(grid);
-    Utils.animateBars(grid);
   },
 
-  renderSurvei(survei) {
-    const box = document.getElementById('surveiBox');
+  /* ---------------- OPERASIONAL (gauge + site list) ---------------- */
+  renderOperasional(pk, monitoring) {
+    const value = pk ? Number(pk.Operasional) || 0 : 0;
+    Charts.renderGauge('gaugeCanvas', value, 'Operasional');
+    document.getElementById('gaugeTarget').textContent = `dari Target ${TARGET_OPERASIONAL}%`;
+
+    const list = document.getElementById('siteList2');
+    if (!monitoring || monitoring.length === 0) {
+      list.innerHTML = `<div class="state-box" style="padding:10px 0;">Belum ada data monitoring untuk periode ini.</div>`;
+      return;
+    }
+    list.innerHTML = monitoring.map(r => {
+      const status = String(r.status || '').toLowerCase();
+      const color = status.includes('normal') ? 'var(--green)' : status.includes('gangguan') ? 'var(--orange)' : 'var(--red)';
+      return `
+        <div class="pk-site-row">
+          <span class="pk-site-dot" style="background:${color};"></span>
+          <span>${Utils.escape(r.site)}</span>
+          <span class="pk-site-status" style="color:${color};">${Utils.escape(r.status)}</span>
+        </div>`;
+    }).join('');
+  },
+
+  /* ---------------- PRIMAAKSI (pie + legend + progress) ---------------- */
+  renderPrimaaksi(primaaksi, pk) {
+    const sesuai = primaaksi ? Number(primaaksi.Sesuai) || 0 : 0;
+    const tidak = primaaksi ? Number(primaaksi.Tidak) || 0 : 0;
+    const total = sesuai + tidak;
+    const pctSesuai = total > 0 ? Math.round((sesuai / total) * 100) : 0;
+    const pctTidak = total > 0 ? 100 - pctSesuai : 0;
+
+    Charts.renderPie('pieCanvas', ['Sesuai ISR', 'Tidak Sesuai ISR'], [sesuai, tidak], {
+      showLegend: false,
+      colors: [Charts.colors.green, Charts.colors.red]
+    });
+
+    document.getElementById('pieLegend').innerHTML = `
+      <div class="pk-legend-item">
+        <span class="pk-legend-dot" style="background:${Charts.colors.green};"></span>
+        <div class="pk-legend-text"><strong>Sesuai ISR</strong><span>${sesuai} (${pctSesuai}%)</span></div>
+      </div>
+      <div class="pk-legend-item">
+        <span class="pk-legend-dot" style="background:${Charts.colors.red};"></span>
+        <div class="pk-legend-text"><strong>Tidak Sesuai ISR</strong><span>${tidak} (${pctTidak}%)</span></div>
+      </div>`;
+
+    const progress = pk ? Number(pk.PrimaAksi) || 0 : 0;
+    document.getElementById('primaaksiProgress').textContent = progress + '%';
+    document.getElementById('primaaksiBar').style.width = Math.min(100, progress) + '%';
+    document.getElementById('primaaksiTotal').textContent = `Total Data Verifikasi: ${total}`;
+  },
+
+  /* ---------------- SURVEY ---------------- */
+  renderSurvey(survei) {
+    const box = document.getElementById('surveyGrid');
     if (!survei) { box.innerHTML = `<div class="state-box">Belum ada data survei.</div>`; return; }
-    const items = [
-      { label: 'IKM', value: survei.IKM },
-      { label: 'IPAK', value: survei.IPAK },
-      { label: 'Responden', value: survei.Responden }
-    ];
+    const ikm = Number(survei.IKM) || 0;
+    const ipak = Number(survei.IPAK) || 0;
+    const responden = survei.Responden || 0;
+
     box.innerHTML = `
-      <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr));">
-        ${items.map(it => `
-          <div style="text-align:center; padding:10px 6px;">
-            <div style="font-size:22px; font-weight:800; color:var(--navy);">${Utils.escape(it.value)}</div>
-            <div style="font-size:11.5px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.3px;">${it.label}</div>
-          </div>`).join('')}
+      <div class="pk-survey-card">
+        <div class="pk-survey-value">${ikm}</div>
+        <div class="pk-survey-label">IKM / IPKP</div>
+        <div class="pk-survey-stars">${this.starsHtml(ikm, 4)}</div>
+      </div>
+      <div class="pk-survey-card">
+        <div class="pk-survey-value">${ipak}</div>
+        <div class="pk-survey-label">IIPP / IPAK</div>
+        <div class="pk-survey-stars">${this.starsHtml(ipak, 10)}</div>
+      </div>
+      <div class="pk-survey-card">
+        <div class="pk-survey-value"><i class="fa-solid fa-users"></i> ${responden}</div>
+        <div class="pk-survey-label">Jumlah Responden</div>
       </div>`;
   },
 
+  /* ---------------- PELAYANAN PUBLIK (icon cards) ---------------- */
+  pelayananIcon(jenis) {
+    const j = String(jenis || '').toLowerCase();
+    if (j.includes('unar')) return 'fa-graduation-cap';
+    if (j.includes('invoice') || j.includes('piutang')) return 'fa-file-invoice-dollar';
+    if (j.includes('klarifikasi') || j.includes('waba')) return 'fa-people-group';
+    if (j.includes('lke')) return 'fa-shield-halved';
+    return 'fa-list-check';
+  },
+
   renderPelayanan(rows) {
-    const box = document.getElementById('pelayananBox');
+    const box = document.getElementById('pelayananCards');
     if (!rows || rows.length === 0) {
       box.innerHTML = `<div class="state-box">Belum ada data pelayanan untuk periode ini.</div>`;
-      Charts.renderBar('barCanvas', [], [], []);
       return;
     }
-    Charts.renderBar('barCanvas',
-      rows.map(r => r.jenis),
-      rows.map(r => Number(r.target) || 0),
-      rows.map(r => Number(r.capaian) || 0));
-
     box.innerHTML = rows.map(r => {
       const target = Number(r.target) || 0;
       const capaian = Number(r.capaian) || 0;
-      const pct = target > 0 ? Math.min(100, (capaian / target) * 100) : 0;
+      const pct = target > 0 ? Math.round((capaian / target) * 100) : 0;
       return `
-        <div class="service-row">
-          <div class="service-top">
-            <span class="name">${Utils.escape(r.jenis)}</span>
-            <span class="ratio">${capaian}/${target}</span>
-          </div>
-          <div class="service-track"><div class="service-fill" style="width:${pct}%;"></div></div>
+        <div class="pk-pelayanan-card">
+          <div class="pk-pelayanan-icon"><i class="fa-solid ${this.pelayananIcon(r.jenis)}"></i></div>
+          <div class="pk-pelayanan-value">${capaian}</div>
+          <div class="pk-pelayanan-label">${Utils.escape(r.jenis)}</div>
+          <div class="pk-pelayanan-target">Target: ${target} (${pct}%)</div>
         </div>`;
     }).join('');
   },
 
-  renderMonitoring(rows) {
-    const list = document.getElementById('siteList');
-    if (!rows || rows.length === 0) {
-      list.innerHTML = `<div class="state-box">Belum ada data monitoring untuk periode ini.</div>`;
+  /* ---------------- REALISASI KEGIATAN (table, dgn akumulasi) ---------------- */
+  renderRealisasi(rowsBulanIni, rowsSetahun) {
+    const wrap = document.getElementById('realisasiTableWrap');
+    if (!rowsBulanIni || rowsBulanIni.length === 0) {
+      wrap.innerHTML = `<div class="state-box">Belum ada data realisasi untuk periode ini.</div>`;
       return;
     }
-    list.innerHTML = rows.map(r => {
-      const status = String(r.status || '').toLowerCase();
-      const badgeClass = status.includes('normal') || status.includes('baik') ? 'badge-normal'
-        : status.includes('rusak') || status.includes('gangguan') ? 'badge-rusak'
-        : 'badge-default';
+
+    const bulanIdx = BULAN_ORDER.indexOf(this.state.bulan);
+    const akumulasi = {};
+    (rowsSetahun || []).forEach(r => {
+      const idx = BULAN_ORDER.indexOf(r.bulan);
+      if (idx <= bulanIdx) {
+        akumulasi[r.jenis] = (akumulasi[r.jenis] || 0) + (Number(r.capaian) || 0);
+      }
+    });
+
+    const rowsHtml = rowsBulanIni.map((r, i) => {
+      const target = Number(r.target) || 0;
+      const capaian = Number(r.capaian) || 0;
+      const total = akumulasi[r.jenis] || capaian;
+      const keteranganCls = capaian === 0 ? 'pk-realisasi-note-bad' : 'pk-realisasi-note-ok';
+      const keteranganText = capaian === 0 ? 'Kegiatan belum dilaksanakan' : '-';
       return `
-        <div class="site-row">
-          <span>${Utils.escape(r.site)}</span>
-          <span class="badge ${badgeClass}">${Utils.escape(r.status)}</span>
-        </div>`;
+        <tr>
+          <td>${i + 1}</td>
+          <td>${Utils.escape(r.jenis)}</td>
+          <td>${target}</td>
+          <td>${capaian}</td>
+          <td>${total}</td>
+          <td class="${keteranganCls}">${keteranganText}</td>
+        </tr>`;
     }).join('');
+
+    wrap.innerHTML = `
+      <table class="pk-realisasi-table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Uraian Kegiatan</th>
+            <th>Target</th>
+            <th>Capaian Bulan ${this.state.bulan} ${this.state.tahun}</th>
+            <th>Akumulasi s.d Bulan Ini</th>
+            <th>Keterangan</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>`;
   },
 
-  renderKegiatan(rows) {
+  /* ---------------- LOG KEGIATAN (DataTable) ---------------- */
+  renderKegiatanLog(rows) {
     const wrap = document.getElementById('kegiatanWrap');
     if (this.state.dataTable) { this.state.dataTable.destroy(); this.state.dataTable = null; }
     if (!rows || rows.length === 0) {
@@ -247,6 +355,12 @@ const Dashboard = {
         paginate: { previous: 'Sebelumnya', next: 'Berikutnya' }, zeroRecords: 'Data tidak ditemukan'
       }
     });
+  },
+
+  renderFootnote() {
+    document.getElementById('footerNote').innerHTML = `
+      <i class="fa-solid fa-circle-info"></i>
+      <span>Data diambil dari Laporan Monitoring dan Evaluasi Perjanjian Kinerja Tim Kerja SPML — Periode Bulan ${this.state.bulan} ${this.state.tahun}</span>`;
   }
 };
 
