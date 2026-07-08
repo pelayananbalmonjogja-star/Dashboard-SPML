@@ -122,7 +122,7 @@ const Dashboard = {
       return;
     }
     const fields = [
-      { key: 'Operasional', unit: '%', label: 'Stasiun dan Perangkat Monitoring SMFR' },
+      { key: 'Stasiun dan Perangkat Monitoring SMFR', unit: '%', label: 'Stasiun dan Perangkat Monitoring SMFR' },
       { key: 'Piutang', unit: '%', label: 'Penyelenggaraan Layanan SOR (UNAR, BIMTEK dan Layanan MOTS)' },
       { key: 'LKE', unit: '%', label: 'LKE Pembangunan ZI' },
       { key: 'IKM', unit: '', label: 'IKM / IPKP' },
