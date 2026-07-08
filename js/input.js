@@ -19,7 +19,7 @@ const InputApp = {
       formId: 'formPK',
       collection: 'pk',
       tahunId: 'pkTahun', bulanId: 'pkBulan',
-      fields: ['Operasional', 'Piutang', 'LKE', 'IKM', 'IPAK', 'PrimaAksi'],
+      fields: ['Stasiun dan Perangkat Monitoring SMFR', 'Piutang', 'LKE', 'IKM', 'IPAK', 'PrimaAksi'],
       statusId: 'pkStatus'
     });
 
