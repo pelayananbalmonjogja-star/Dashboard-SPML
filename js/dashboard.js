@@ -71,14 +71,13 @@ const Dashboard = {
       const { tahun, bulan } = this.state;
       const id = periodeId(tahun, bulan);
 
-      const [pkSnap, surveiSnap, primaaksiSnap, monitoringSnap, pelayananSnap, kegiatanSnap, pelayananYearSnap] = await Promise.all([
+      const [pkSnap, surveiSnap, primaaksiSnap, monitoringSnap, pelayananSnap, kegiatanSnap] = await Promise.all([
         db.collection('pk').doc(id).get(),
         db.collection('survei').doc(id).get(),
         db.collection('primaaksi').doc(id).get(),
         db.collection('monitoring').where('tahun', '==', tahun).where('bulan', '==', bulan).get(),
         db.collection('pelayanan').where('tahun', '==', tahun).where('bulan', '==', bulan).get(),
-        db.collection('kegiatan').where('tahun', '==', tahun).where('bulan', '==', bulan).get(),
-        db.collection('pelayanan').where('tahun', '==', tahun).get()
+        db.collection('kegiatan').where('tahun', '==', tahun).where('bulan', '==', bulan).get()
       ]);
 
       const pk = pkSnap.exists ? pkSnap.data() : null;
@@ -87,9 +86,8 @@ const Dashboard = {
       const monitoring = []; monitoringSnap.forEach(d => monitoring.push(d.data()));
       const pelayanan = []; pelayananSnap.forEach(d => pelayanan.push({ id: d.id, ...d.data() }));
       const kegiatan = []; kegiatanSnap.forEach(d => kegiatan.push({ id: d.id, ...d.data() }));
-      const pelayananYear = []; pelayananYearSnap.forEach(d => pelayananYear.push(d.data()));
 
-      this.renderAll({ pk, survei, primaaksi, monitoring, pelayanan, kegiatan, pelayananYear });
+      this.renderAll({ pk, survei, primaaksi, monitoring, pelayanan, kegiatan });
     } catch (err) {
       console.error(err);
       this.renderError(err.message);
@@ -103,12 +101,11 @@ const Dashboard = {
   },
 
   renderAll(data) {
-    this.renderKpi(data.pk, data.survei);
+    this.renderKpi(data.pk);
     this.renderOperasional(data.pk, data.monitoring);
     this.renderPrimaaksi(data.primaaksi, data.pk);
     this.renderSurvey(data.survei);
     this.renderPelayanan(data.pelayanan);
-    this.renderRealisasi(data.pelayanan, data.pelayananYear);
     this.renderKegiatanLog(data.kegiatan);
     this.renderFootnote();
   },
@@ -135,15 +132,17 @@ const Dashboard = {
   },
 
   /* ---------------- KPI CARDS ---------------- */
-  renderKpi(pk, survei) {
+  renderKpi(pk) {
     const grid = document.getElementById('section-kpi');
     if (!pk) {
       grid.innerHTML = `<div class="state-box">Belum ada data PK untuk periode ini.</div>`;
       return;
     }
+    // "Operasional SMFR" tidak ditampilkan sebagai kartu di sini karena sudah
+    // diwakili oleh gauge pada panel "1. Operasional SMFR di UPT".
     const fields = [
-      { key: 'Operasional', label: 'Operasional SMFR', icon: 'fa-tower-broadcast', color: '#2563EB', type: 'percent' },
       { key: 'Piutang', label: 'Pelayanan Piutang BHP', icon: 'fa-file-circle-check', color: '#16A34A', type: 'percent' },
+      { key: 'SOR', label: 'Penyelenggaraan Layanan SOR', icon: 'fa-id-card', color: '#0891B2', type: 'percent' },
       { key: 'LKE', label: 'LKE Pembangunan ZI', icon: 'fa-shield-halved', color: '#7C3AED', type: 'percent' },
       { key: 'IKM', label: 'IKM / IPKP', icon: 'fa-face-smile', color: '#F59E0B', type: 'star', max: 4 },
       { key: 'IPAK', label: 'IIPP / IPAK', icon: 'fa-shield-heart', color: '#0D9488', type: 'star', max: 10 },
@@ -188,7 +187,10 @@ const Dashboard = {
     }
     list.innerHTML = monitoring.map(r => {
       const status = String(r.status || '').toLowerCase();
-      const color = status.includes('normal') ? 'var(--green)' : status.includes('gangguan') ? 'var(--orange)' : 'var(--red)';
+      // Baik (100%) = hijau, Rusak (75%) = merah. Status lama (Normal/Gangguan) tetap didukung untuk data lawas.
+      const color = (status.includes('baik') || status.includes('normal'))
+        ? 'var(--green)'
+        : status.includes('gangguan') ? 'var(--orange)' : 'var(--red)';
       return `
         <div class="pk-site-row">
           <span class="pk-site-dot" style="background:${color};"></span>
@@ -230,25 +232,33 @@ const Dashboard = {
   /* ---------------- SURVEY ---------------- */
   renderSurvey(survei) {
     const box = document.getElementById('surveyGrid');
-    if (!survei) { box.innerHTML = `<div class="state-box">Belum ada data survei.</div>`; return; }
+    const respondenBox = document.getElementById('surveyResponden');
+    if (!survei) {
+      box.innerHTML = `<div class="state-box">Belum ada data survei.</div>`;
+      respondenBox.innerHTML = '';
+      return;
+    }
     const ikm = Number(survei.IKM) || 0;
     const ipak = Number(survei.IPAK) || 0;
-    const responden = survei.Responden || 0;
+    const responden = Number(survei.Responden) || 0;
 
     box.innerHTML = `
       <div class="pk-survey-card">
-        <div class="pk-survey-value">${ikm}</div>
         <div class="pk-survey-label">IKM / IPKP</div>
+        <div class="pk-survey-value">${ikm}</div>
         <div class="pk-survey-stars">${this.starsHtml(ikm, 4)}</div>
       </div>
       <div class="pk-survey-card">
-        <div class="pk-survey-value">${ipak}</div>
         <div class="pk-survey-label">IIPP / IPAK</div>
+        <div class="pk-survey-value">${ipak}</div>
         <div class="pk-survey-stars">${this.starsHtml(ipak, 10)}</div>
-      </div>
-      <div class="pk-survey-card">
-        <div class="pk-survey-value"><i class="fa-solid fa-users"></i> ${responden}</div>
-        <div class="pk-survey-label">Jumlah Responden</div>
+      </div>`;
+
+    respondenBox.innerHTML = `
+      <div class="pk-survey-responden-icon"><i class="fa-solid fa-users"></i></div>
+      <div>
+        <div class="pk-survey-responden-label">Jumlah Responden</div>
+        <div class="pk-survey-responden-value">${responden} Responden</div>
       </div>`;
   },
 
@@ -280,56 +290,6 @@ const Dashboard = {
           <div class="pk-pelayanan-target">Target: ${target} (${pct}%)</div>
         </div>`;
     }).join('');
-  },
-
-  /* ---------------- REALISASI KEGIATAN (table, dgn akumulasi) ---------------- */
-  renderRealisasi(rowsBulanIni, rowsSetahun) {
-    const wrap = document.getElementById('realisasiTableWrap');
-    if (!rowsBulanIni || rowsBulanIni.length === 0) {
-      wrap.innerHTML = `<div class="state-box">Belum ada data realisasi untuk periode ini.</div>`;
-      return;
-    }
-
-    const bulanIdx = BULAN_ORDER.indexOf(this.state.bulan);
-    const akumulasi = {};
-    (rowsSetahun || []).forEach(r => {
-      const idx = BULAN_ORDER.indexOf(r.bulan);
-      if (idx <= bulanIdx) {
-        akumulasi[r.jenis] = (akumulasi[r.jenis] || 0) + (Number(r.capaian) || 0);
-      }
-    });
-
-    const rowsHtml = rowsBulanIni.map((r, i) => {
-      const target = Number(r.target) || 0;
-      const capaian = Number(r.capaian) || 0;
-      const total = akumulasi[r.jenis] || capaian;
-      const keteranganCls = capaian === 0 ? 'pk-realisasi-note-bad' : 'pk-realisasi-note-ok';
-      const keteranganText = capaian === 0 ? 'Kegiatan belum dilaksanakan' : '-';
-      return `
-        <tr>
-          <td>${i + 1}</td>
-          <td>${Utils.escape(r.jenis)}</td>
-          <td>${target}</td>
-          <td>${capaian}</td>
-          <td>${total}</td>
-          <td class="${keteranganCls}">${keteranganText}</td>
-        </tr>`;
-    }).join('');
-
-    wrap.innerHTML = `
-      <table class="pk-realisasi-table">
-        <thead>
-          <tr>
-            <th>No</th>
-            <th>Uraian Kegiatan</th>
-            <th>Target</th>
-            <th>Capaian Bulan ${this.state.bulan} ${this.state.tahun}</th>
-            <th>Akumulasi s.d Bulan Ini</th>
-            <th>Keterangan</th>
-          </tr>
-        </thead>
-        <tbody>${rowsHtml}</tbody>
-      </table>`;
   },
 
   /* ---------------- LOG KEGIATAN (DataTable) ---------------- */
