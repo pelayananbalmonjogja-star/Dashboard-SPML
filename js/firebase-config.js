@@ -16,8 +16,8 @@ const FIREBASE_CONFIG = {
 };
 
 // Nama & subjudul aplikasi (tampil di header)
-const APP_NAME = "Dashboard PK Tim SPML";
-const APP_SUBTITLE = "Pencapaian Kinerja Bulanan";
+const APP_NAME = "Dashboard Tim Kerja Sarana Prasarana Monitoring dan Layanan";
+const APP_SUBTITLE = "Balai Monitor Spektrum Frekuensi Radio Kelas I Yogyakarta";
 
 // Urutan bulan standar (dipakai untuk sorting & dropdown)
 const BULAN_ORDER = [
