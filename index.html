@@ -1,140 +1,316 @@
 <!DOCTYPE html>
+
 <html lang="id">
+
 <head>
+
 <meta charset="UTF-8" />
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
 <title>Dashboard PK Tim SPML</title>
 
+
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
 <link rel="stylesheet" href="css/style.css">
+
 </head>
+
 <body class="pk-body">
 
+
+
 <div id="loadingOverlay">
+
   <div class="spinner"></div>
+
   <p>Memuat data dashboard...</p>
+
 </div>
+
+
 
 <div class="pk-shell">
 
+
+
+  <!-- ===================== SIDEBAR ===================== -->
+
   <aside class="pk-sidebar" id="pkSidebar">
+
     <div class="pk-sidebar-brand">
+
       <div class="pk-sidebar-logo"><i class="fa-solid fa-satellite-dish"></i></div>
+
       <div>
+
         <div class="pk-sidebar-title">PK TIM SPML</div>
+
         <div class="pk-sidebar-sub">Balmon SFR Kelas I Yogyakarta</div>
+
       </div>
+
     </div>
+
     <nav class="pk-nav">
+
       <a href="#top" class="pk-nav-item active"><i class="fa-solid fa-house"></i> Dashboard</a>
+
       <a href="#section-kpi" class="pk-nav-item"><i class="fa-solid fa-gauge"></i> KPI PK</a>
+
       <a href="#section-operasional" class="pk-nav-item"><i class="fa-solid fa-tower-broadcast"></i> Monitoring SMFR</a>
+
       <a href="#section-pelayanan" class="pk-nav-item"><i class="fa-solid fa-people-group"></i> Pelayanan Publik</a>
+
       <a href="#section-survey" class="pk-nav-item"><i class="fa-solid fa-star"></i> Survey</a>
+
       <a href="#section-primaaksi" class="pk-nav-item"><i class="fa-solid fa-chart-pie"></i> PrimaAksi</a>
+
       <a href="#section-kegiatan" class="pk-nav-item"><i class="fa-regular fa-calendar-check"></i> Kegiatan</a>
+
+      <a href="#section-realisasi" class="pk-nav-item"><i class="fa-solid fa-table-list"></i> Realisasi</a>
+
       <a href="input.html" class="pk-nav-item"><i class="fa-regular fa-calendar-days"></i> Data Bulanan</a>
+
     </nav>
+
   </aside>
+
+
+
+  <!-- ===================== MAIN AREA ===================== -->
 
   <div class="pk-main" id="top">
 
+
+
     <header class="pk-topbar">
+
       <button class="pk-hamburger" id="btnSidebarToggle"><i class="fa-solid fa-bars"></i></button>
+
       <div class="pk-topbar-brand">
+
         <div class="pk-topbar-logo"><i class="fa-solid fa-satellite-dish"></i></div>
+
         <div>
+
           <div class="pk-topbar-title" id="appName">PK TIM SPML</div>
+
           <div class="pk-topbar-sub" id="appSubtitle">Balmon SFR Kelas I Yogyakarta</div>
+
         </div>
+
       </div>
+
       <div class="pk-topbar-actions">
+
         <div class="pk-periode-pill">
+
           <i class="fa-regular fa-calendar"></i>
+
           <span class="pk-periode-label">Periode</span>
+
           <select id="selPeriode"></select>
+
         </div>
+
         <button class="pk-icon-btn" id="btnRefresh" title="Refresh"><i class="fa-solid fa-rotate"></i></button>
+
       </div>
+
     </header>
+
+
 
     <main class="pk-content">
 
+
+
       <div class="pk-page-header">
+
         <h1>DASHBOARD PK</h1>
+
         <p>Tim Kerja Sarana Prasarana Monitoring dan Layanan</p>
+
       </div>
+
+
+
+      <!-- ============ KPI CARDS ============ -->
 
       <section id="section-kpi" class="pk-kpi-grid" >
+
         <div class="state-box">Memuat...</div>
+
       </section>
 
+
+
+      <!-- ============ ROW: OPERASIONAL + PRIMAAKSI ============ -->
+
       <div class="pk-row">
+
         <section id="section-operasional" class="pk-panel">
+
           <h3>1. Operasional SMFR di UPT</h3>
+
           <div class="pk-gauge-wrap">
+
             <canvas id="gaugeCanvas"></canvas>
+
           </div>
+
           <div class="pk-gauge-target" id="gaugeTarget"></div>
+
           <div class="pk-subheading">Keterangan Site</div>
+
           <div class="pk-site-list" id="siteList2"></div>
+
         </section>
+
+
 
         <section id="section-primaaksi" class="pk-panel">
+
           <h3>PrimaAksi — Verifikasi Site ISR</h3>
+
           <div class="pk-pie-row">
+
             <div class="pk-pie-wrap"><canvas id="pieCanvas"></canvas></div>
+
             <div class="pk-pie-legend" id="pieLegend"></div>
+
           </div>
+
           <div class="pk-progress-box">
+
             <div class="pk-progress-label">Progress Capaian</div>
+
             <div class="pk-progress-value" id="primaaksiProgress">0%</div>
+
             <div class="kpi-bar"><div class="kpi-bar-fill" id="primaaksiBar" style="background:var(--green);"></div></div>
+
             <div class="pk-progress-total" id="primaaksiTotal"></div>
+
           </div>
+
         </section>
+
       </div>
+
+
+
+      <!-- ============ ROW: SURVEY + PELAYANAN ============ -->
 
       <div class="pk-row">
+
         <section id="section-survey" class="pk-panel">
+
           <h3>Survey Pelayanan Publik</h3>
+
           <div class="pk-survey-grid" id="surveyGrid"></div>
+
         </section>
+
+
 
         <section id="section-pelayanan" class="pk-panel">
-          <h3>Realisasi Kegiatan Tim Kerja SPML</h3>
+
+          <h3>Pelayanan Publik</h3>
+
           <div class="pk-pelayanan-grid" id="pelayananCards"></div>
+
         </section>
+
       </div>
 
-      <section id="section-kegiatan" class="pk-panel pk-panel-wide">
-        <h3>Rencana &amp; Realisasi Kegiatan (Log)</h3>
-        <div class="table-wrap" style="box-shadow:none; border:none; padding:0;">
-          <div id="kegiatanWrap"><div class="state-box">Memuat...</div></div>
+
+
+      <!-- ============ REALISASI KEGIATAN (TABLE) ============ -->
+
+      <section id="section-realisasi" class="pk-panel pk-panel-wide">
+
+        <h3>Realisasi Kegiatan Tim Kerja SPML</h3>
+
+        <div class="pk-table-wrap" id="realisasiTableWrap">
+
+          <div class="state-box">Memuat...</div>
+
         </div>
+
       </section>
+
+
+
+      <!-- ============ LOG KEGIATAN (DATATABLE LAMA) ============ -->
+
+      <section id="section-kegiatan" class="pk-panel pk-panel-wide">
+
+        <h3>Rencana &amp; Realisasi Kegiatan (Log)</h3>
+
+        <div class="table-wrap" style="box-shadow:none; border:none; padding:0;">
+
+          <div id="kegiatanWrap"><div class="state-box">Memuat...</div></div>
+
+        </div>
+
+      </section>
+
+
 
       <div class="pk-footnote" id="footerNote"></div>
 
+
+
     </main>
+
   </div>
+
 </div>
 
+
+
+<!-- Firebase SDK (compat) -->
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
+
+
+<!-- jQuery + DataTables -->
+
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+
+
+<!-- Chart.js -->
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
+
+
 <script src="js/firebase-config.js"></script>
+
 <script src="js/firebase-init.js"></script>
+
 <script src="js/utils.js"></script>
+
 <script src="js/charts.js"></script>
+
 <script src="js/dashboard.js"></script>
+
 </body>
-</html>
+
+</html> 
+
