@@ -103,7 +103,10 @@ const Dashboard = {
 
   renderAll(data) {
     this.renderKpi(data.pk);
-    Charts.renderGauge('gaugeCanvas', data.pk ? data.pk.Operasional : 0);
+    
+    // Memastikan grafik gauge mengambil key 'Operasional' (Huruf O besar) secara konsisten
+    Charts.renderGauge('gaugeCanvas', data.pk ? (data.pk.Operasional || 0) : 0);
+    
     if (data.primaaksi) {
       Charts.renderPie('pieCanvas',
         ['Sesuai', 'Tidak Sesuai'],
@@ -122,7 +125,7 @@ const Dashboard = {
       return;
     }
     const fields = [
-      { key: 'Stasiun dan Perangkat Monitoring SMFR', unit: '%', label: 'Stasiun dan Perangkat Monitoring SMFR' },
+      { key: 'Operasional', unit: '%', label: 'Stasiun dan Perangkat Monitoring SMFR' },
       { key: 'Piutang', unit: '%', label: 'Penyelenggaraan Layanan SOR (UNAR, BIMTEK dan Layanan MOTS)' },
       { key: 'LKE', unit: '%', label: 'LKE Pembangunan ZI' },
       { key: 'IKM', unit: '', label: 'IKM / IPKP' },
@@ -135,7 +138,7 @@ const Dashboard = {
       const value = Number(raw) || 0;
       const isPercentLike = f.unit === '%';
       
-      // Rumus diperbarui: Jika non-persen (IKM & IPAK), nilai dibagi 4 lalu dikali 100 untuk skala persen visual ring & bar
+      // Rumus diperbarui: Jika non-persen (IKM & IPAK skala maksimal 4), nilai dibagi 4 lalu dikali 100 agar kalkulasi warna ring tepat
       const pct = isPercentLike ? value : Math.min(100, (value / 4) * 100); 
       
       const status = pct >= 90 ? 'success' : pct >= 75 ? 'warning' : 'danger';
