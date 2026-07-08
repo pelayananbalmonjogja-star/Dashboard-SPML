@@ -4,6 +4,23 @@
  * Semua form Create/Update/Delete data ke Firestore ada di sini.
  * =======================================================
  */
+// Daftar site tetap untuk checklist "Kondisi Stasiun Monitoring SMFR".
+const SITE_LIST = [
+  'Site Kalasan',
+  'Site Girimulyo',
+  'Site Girijati',
+  'Site Wonogiri',
+  'Site Surakarta',
+  'Site Wonosari',
+  'Site Purworejo',
+  'Site Kebumen',
+  'Mobil Mon DF 1',
+  'Mobil Mon DF 2'
+];
+
+// Nilai persentase per kondisi site.
+const SITE_KONDISI_VALUE = { Baik: 100, Rusak: 75 };
+
 const InputApp = {
   initialized: false,
 
@@ -19,7 +36,7 @@ const InputApp = {
       formId: 'formPK',
       collection: 'pk',
       tahunId: 'pkTahun', bulanId: 'pkBulan',
-      fields: ['Operasional', 'Piutang', 'LKE', 'IKM', 'IPAK', 'PrimaAksi'],
+      fields: ['Operasional', 'Piutang', 'SOR', 'LKE', 'IKM', 'IPAK', 'PrimaAksi'],
       statusId: 'pkStatus'
     });
 
@@ -39,14 +56,7 @@ const InputApp = {
       statusId: 'primaaksiStatus'
     });
 
-    this.setupMultiForm({
-      formId: 'formMonitoring',
-      collection: 'monitoring',
-      tahunId: 'monitoringTahun', bulanId: 'monitoringBulan',
-      fields: ['site', 'status'],
-      listId: 'monitoringList',
-      rowLabel: (d) => `${d.site} — ${d.status}`
-    });
+    this.setupSiteChecklist();
 
     this.setupMultiForm({
       formId: 'formPelayanan',
@@ -264,6 +274,171 @@ const InputApp = {
       } catch (err) {
         console.error(err);
         alert('Gagal menyimpan: ' + err.message);
+      }
+    });
+  },
+
+  /** Checklist site khusus untuk tab "Kondisi Stasiun Monitoring SMFR" */
+  setupSiteChecklist() {
+    const tahunEl = document.getElementById('monitoringTahun');
+    const bulanEl = document.getElementById('monitoringBulan');
+    const checklistEl = document.getElementById('siteChecklist');
+    const totalEl = document.getElementById('monitoringTotalOperasional');
+    const statusEl = document.getElementById('monitoringStatus');
+    const listEl = document.getElementById('monitoringList');
+    const btnSimpan = document.getElementById('btnSimpanSite');
+    if (!tahunEl || !bulanEl || !checklistEl || !totalEl || !btnSimpan) return;
+
+    // Render baris checklist untuk tiap site
+    checklistEl.innerHTML = SITE_LIST.map((site, i) => `
+      <div class="site-check-row" data-site="${Utils.escape(site)}">
+        <label class="site-check-label">
+          <input type="checkbox" class="site-check-box" id="siteChk_${i}">
+          <span>${Utils.escape(site)}</span>
+        </label>
+        <select class="site-check-kondisi" id="siteKondisi_${i}">
+          <option value="Baik">Baik (100%)</option>
+          <option value="Rusak">Rusak (75%)</option>
+        </select>
+      </div>`).join('');
+
+    const recalcTotal = () => {
+      const values = [];
+      SITE_LIST.forEach((site, i) => {
+        const chk = document.getElementById(`siteChk_${i}`);
+        const kondisi = document.getElementById(`siteKondisi_${i}`);
+        if (chk && chk.checked) {
+          values.push(SITE_KONDISI_VALUE[kondisi.value] ?? 0);
+        }
+      });
+      if (values.length === 0) return;
+      const avg = values.reduce((a, b) => a + b, 0) / values.length;
+      totalEl.value = Math.round(avg * 100) / 100;
+    };
+
+    checklistEl.addEventListener('change', (e) => {
+      if (e.target.classList.contains('site-check-box') || e.target.classList.contains('site-check-kondisi')) {
+        recalcTotal();
+      }
+    });
+
+    const loadExisting = async () => {
+      const tahun = tahunEl.value.trim();
+      const bulan = bulanEl.value;
+      // reset checklist dulu
+      SITE_LIST.forEach((site, i) => {
+        const chk = document.getElementById(`siteChk_${i}`);
+        const kondisi = document.getElementById(`siteKondisi_${i}`);
+        if (chk) chk.checked = false;
+        if (kondisi) kondisi.value = 'Baik';
+      });
+      totalEl.value = '';
+      if (!tahun || !bulan) { listEl.innerHTML = ''; return; }
+
+      try {
+        const [monitoringSnap, pkDoc] = await Promise.all([
+          db.collection('monitoring').where('tahun', '==', String(tahun)).where('bulan', '==', bulan).get(),
+          db.collection('pk').doc(periodeId(tahun, bulan)).get()
+        ]);
+
+        const rows = [];
+        monitoringSnap.forEach(doc => rows.push({ id: doc.id, ...doc.data() }));
+
+        rows.forEach(r => {
+          const idx = SITE_LIST.indexOf(r.site);
+          if (idx === -1) return;
+          const chk = document.getElementById(`siteChk_${idx}`);
+          const kondisi = document.getElementById(`siteKondisi_${idx}`);
+          const kondisiValue = String(r.status || '').toLowerCase().includes('rusak') ? 'Rusak' : 'Baik';
+          if (chk) chk.checked = true;
+          if (kondisi) kondisi.value = kondisiValue;
+        });
+
+        if (rows.length > 0) {
+          recalcTotal();
+        } else if (pkDoc.exists && pkDoc.data().Operasional !== undefined) {
+          totalEl.value = pkDoc.data().Operasional;
+        }
+
+        if (rows.length === 0) {
+          listEl.innerHTML = `<div class="state-box" style="padding:16px 0;">Belum ada data site untuk periode ini.</div>`;
+        } else {
+          listEl.innerHTML = rows.map(r => `
+            <div class="mini-row" data-id="${r.id}">
+              <span>${Utils.escape(r.site)} — ${Utils.escape(r.status)}</span>
+            </div>`).join('');
+        }
+
+        statusEl.textContent = rows.length > 0
+          ? 'Data site sudah ada — menyimpan akan menimpa (update).'
+          : 'Belum ada data site untuk periode ini.';
+        statusEl.className = 'form-status ' + (rows.length > 0 ? 'exists' : 'new');
+      } catch (err) {
+        console.error('Gagal memuat data site:', err);
+      }
+    };
+
+    tahunEl.addEventListener('change', loadExisting);
+    bulanEl.addEventListener('change', loadExisting);
+    loadExisting();
+
+    btnSimpan.addEventListener('click', async () => {
+      const tahun = tahunEl.value.trim();
+      const bulan = bulanEl.value;
+      if (!tahun || !bulan) return alert('Isi Tahun dan Bulan dulu.');
+
+      try {
+        // Ambil data site yang sudah tersimpan untuk periode ini agar site yang
+        // di-uncheck bisa dihapus, dan site yang sudah ada di-update (bukan duplikat).
+        const existingSnap = await db.collection('monitoring')
+          .where('tahun', '==', String(tahun))
+          .where('bulan', '==', bulan)
+          .get();
+        const existingBySite = {};
+        existingSnap.forEach(doc => { existingBySite[doc.data().site] = doc.id; });
+
+        const batchOps = [];
+        SITE_LIST.forEach((site, i) => {
+          const chk = document.getElementById(`siteChk_${i}`);
+          const kondisi = document.getElementById(`siteKondisi_${i}`);
+          const isChecked = chk && chk.checked;
+          const existingId = existingBySite[site];
+
+          if (isChecked) {
+            const payload = {
+              tahun: String(tahun),
+              bulan,
+              site,
+              status: kondisi.value,
+              value: SITE_KONDISI_VALUE[kondisi.value] ?? 0
+            };
+            if (existingId) {
+              batchOps.push(db.collection('monitoring').doc(existingId).set(payload, { merge: true }));
+            } else {
+              batchOps.push(db.collection('monitoring').add(payload));
+            }
+          } else if (existingId) {
+            batchOps.push(db.collection('monitoring').doc(existingId).delete());
+          }
+        });
+
+        await Promise.all(batchOps);
+
+        // Simpan total operasional ke koleksi 'pk' (dipakai gauge di dashboard)
+        const totalValue = Number(totalEl.value) || 0;
+        await db.collection('pk').doc(periodeId(tahun, bulan)).set({
+          tahun: String(tahun), bulan, Operasional: totalValue
+        }, { merge: true });
+
+        await upsertPeriode(tahun, bulan);
+
+        statusEl.textContent = '✅ Data site & total operasional tersimpan.';
+        statusEl.className = 'form-status success';
+        loadExisting();
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = '⚠ Gagal menyimpan: ' + err.message;
+        statusEl.className = 'form-status error';
       }
     });
   }
