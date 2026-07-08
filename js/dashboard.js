@@ -1,7 +1,7 @@
 /**
  * =======================================================
- *  DASHBOARD (PUBLIC, READ-ONLY)
- *  Membaca langsung dari Firestore, tanpa Apps Script.
+ * DASHBOARD (PUBLIC, READ-ONLY)
+ * Membaca langsung dari Firestore, tanpa Apps Script.
  * =======================================================
  */
 const Dashboard = {
@@ -121,31 +121,34 @@ const Dashboard = {
       grid.innerHTML = `<div class="state-box">Belum ada data PK untuk periode ini.</div>`;
       return;
     }
-   const fields = [
-  { key: 'Operasional', unit: '%', label: 'Stasiun dan Perangkat Monitoring SMFR' },
-  { key: 'Piutang', unit: '%', label: 'Penyelenggaraan Layanan SOR (UNAR, BIMTEK dan Layanan MOTS)' },
-  { key: 'LKE', unit: '%', label: 'LKE Pembangunan ZI' },
-  { key: 'IKM', unit: '', label: 'IKM / IPKP' },
-  { key: 'IPAK', unit: '', label: 'IIPP / IPAK' },
-  { key: 'PrimaAksi', unit: '%', label: 'PrimaAksi' }
-];
+    const fields = [
+      { key: 'Operasional', unit: '%', label: 'Stasiun dan Perangkat Monitoring SMFR' },
+      { key: 'Piutang', unit: '%', label: 'Penyelenggaraan Layanan SOR (UNAR, BIMTEK dan Layanan MOTS)' },
+      { key: 'LKE', unit: '%', label: 'LKE Pembangunan ZI' },
+      { key: 'IKM', unit: '', label: 'IKM / IPKP' },
+      { key: 'IPAK', unit: '', label: 'IIPP / IPAK' },
+      { key: 'PrimaAksi', unit: '%', label: 'PrimaAksi' }
+    ];
 
     grid.innerHTML = fields.map(f => {
       const raw = pk[f.key];
       const value = Number(raw) || 0;
       const isPercentLike = f.unit === '%';
-      const pct = isPercentLike ? value : Math.min(100, value * 10); // skala kasar utk ring non-persen (mis. IKM 0-10)
+      
+      // Rumus diperbarui: Jika non-persen (IKM & IPAK), nilai dibagi 4 lalu dikali 100 untuk skala persen visual ring & bar
+      const pct = isPercentLike ? value : Math.min(100, (value / 4) * 100); 
+      
       const status = pct >= 90 ? 'success' : pct >= 75 ? 'warning' : 'danger';
       const color = status === 'success' ? 'var(--green)' : status === 'warning' ? 'var(--orange)' : 'var(--red)';
 
       return `
-  <div class="kpi-card" data-status="${status}">
-    <div class="kpi-top">
-      <span class="kpi-label">${f.label}</span> 
-      <div class="kpi-ring" style="--pct:${pct}; --ring-color:${color};">
-        <div class="kpi-ring-inner">${Math.round(pct)}</div>
-      </div>
-    </div>
+        <div class="kpi-card" data-status="${status}">
+          <div class="kpi-top">
+            <span class="kpi-label">${f.label}</span> 
+            <div class="kpi-ring" style="--pct:${pct}; --ring-color:${color};">
+              <div class="kpi-ring-inner">${Math.round(pct)}</div>
+            </div>
+          </div>
           <div class="kpi-value" data-count-to="${value}">0${isPercentLike ? '<span class="unit">%</span>' : ''}</div>
           <div class="kpi-bar"><div class="kpi-bar-fill" style="background:${color};" data-target-width="${pct}%"></div></div>
         </div>`;
