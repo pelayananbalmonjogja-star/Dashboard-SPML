@@ -144,8 +144,8 @@ const Dashboard = {
       { key: 'Piutang', label: 'Pelayanan Piutang BHP', icon: 'fa-file-circle-check', color: '#16A34A', type: 'percent' },
       { key: 'SOR', label: 'Penyelenggaraan Layanan SOR', icon: 'fa-id-card', color: '#0891B2', type: 'percent' },
       { key: 'LKE', label: 'LKE Pembangunan ZI', icon: 'fa-shield-halved', color: '#7C3AED', type: 'percent' },
-      { key: 'IKM', label: 'IKM / IPKP', icon: 'fa-face-smile', color: '#F59E0B', type: 'star', max: 4 },
-      { key: 'IPAK', label: 'IIPP / IPAK', icon: 'fa-shield-heart', color: '#0D9488', type: 'star', max: 10 },
+      { key: 'IKM', label: 'IKM / IPKP SKALA 4', icon: 'fa-face-smile', color: '#F59E0B', type: 'star', max: 4, scale: 'Skala 4' },
+      { key: 'IPAK', label: 'IIPP / IPAK SKALA 10', icon: 'fa-shield-heart', color: '#0D9488', type: 'star', max: 10, scale: 'Skala 10' },
       { key: 'PrimaAksi', label: 'PrimaAksi', icon: 'fa-bullseye', color: '#DC2626', type: 'percent' }
     ];
 
