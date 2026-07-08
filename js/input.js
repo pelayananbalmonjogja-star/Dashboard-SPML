@@ -61,7 +61,7 @@ const InputApp = {
       formId: 'formKegiatan',
       collection: 'kegiatan',
       tahunId: 'kegiatanTahun', bulanId: 'kegiatanBulan',
-     fields: ['tanggalMulai', 'tanggalSelesai', 'judul', 'keterangan'],
+      fields: ['tanggalMulai', 'tanggalSelesai', 'judul', 'keterangan'],
       listId: 'kegiatanList',
       rowLabel: (d) => `${d.tanggalMulai || ''} s.d ${d.tanggalSelesai || ''} — ${d.judul}`
     });
