@@ -232,8 +232,9 @@ const Dashboard = {
       wrap.innerHTML = `<div class="state-box">Belum ada data kegiatan untuk periode ini.</div>`;
       return;
     }
-    const columns = ['tanggal', 'judul', 'keterangan'];
-    const thead = columns.map(c => `<th>${c}</th>`).join('');
+    const columns = ['tanggalMulai', 'tanggalSelesai', 'judul', 'keterangan'];
+    const headerLabels = { tanggalMulai: 'Tanggal Mulai', tanggalSelesai: 'Tanggal Selesai', judul: 'Judul', keterangan: 'Keterangan' };
+    const thead = columns.map(c => `<th>${headerLabels[c]}</th>`).join('');
     const tbody = rows.map(r => `<tr>${columns.map(c => `<td>${Utils.escape(r[c])}</td>`).join('')}</tr>`).join('');
 
     wrap.innerHTML = `<table id="kegiatanTable" class="display" style="width:100%"><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table>`;
