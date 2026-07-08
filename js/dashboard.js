@@ -1,14 +1,46 @@
 /**
  * =======================================================
- *  DASHBOARD (PUBLIC, READ-ONLY) — REDESIGN
- *  Membaca langsung dari Firestore. Skema data TIDAK berubah,
- *  hanya tampilannya yang dirombak mengikuti desain baru.
+ * DASHBOARD (PUBLIC, READ-ONLY) — REDESIGN
+ * Membaca langsung dari Firestore. Skema data TIDAK berubah,
+ * hanya tampilannya yang dirombak mengikuti desain baru.
+ * =======================================================
+ * * Update 2026: Sinkronisasi Otomatis dengan SITE_LIST input.js
+ * & Integrasi Map Modal Interaktif Leaflet Dinamis.
  * =======================================================
  */
 const TARGET_OPERASIONAL = 85; // target garis acuan gauge Operasional (%)
 
+// DISELARASKAN DENGAN SITE_LIST PADA FILE input.js
+const SINKRON_SITE_LIST = [
+  'Site Kalasan',
+  'Site Girimulyo',
+  'Site Girijati',
+  'Site Wonogiri',
+  'Site Surakarta',
+  'Site Wonosari',
+  'Site Purworejo',
+  'Site Kebumen',
+  'Mobil Mon DF 1',
+  'Mobil Mon DF 2'
+];
+
+// Koordinat perkiraan area operasional stasiun monitoring (DIY - Jawa Tengah)
+// untuk memetakan pin Leaflet secara presisi & beraturan
+const SITE_COORDINATES = {
+  'Site Kalasan': { lat: -7.7661, lng: 110.4722 },
+  'Site Girimulyo': { lat: -7.7523, lng: 110.1225 },
+  'Site Girijati': { lat: -8.0125, lng: 110.3292 },
+  'Site Wonogiri': { lat: -7.8114, lng: 110.9250 },
+  'Site Surakarta': { lat: -7.5666, lng: 110.8242 },
+  'Site Wonosari': { lat: -7.9658, lng: 110.6015 },
+  'Site Purworejo': { lat: -7.7128, lng: 110.0078 },
+  'Site Kebumen': { lat: -7.6692, lng: 109.6525 },
+  'Mobil Mon DF 1': { lat: -7.7956, lng: 110.3695 }, // Bergerak / Base Pusat
+  'Mobil Mon DF 2': { lat: -7.7900, lng: 110.3750 }  // Bergerak / Lempuyangan
+};
+
 const Dashboard = {
-  state: { tahun: '', bulan: '', dataTable: null },
+  state: { tahun: '', bulan: '', dataTable: null, currentMonitoringData: [] },
 
   async init() {
     this.setupSidebarToggle();
@@ -51,7 +83,6 @@ const Dashboard = {
       return;
     }
 
-    // urutan terbaru dulu di dropdown
     const reversed = [...periods].reverse();
     sel.innerHTML = reversed.map(p => `<option value="${p.tahun}|${p.bulan}">${p.bulan} ${p.tahun}</option>`).join('');
 
@@ -86,6 +117,9 @@ const Dashboard = {
       const monitoring = []; monitoringSnap.forEach(d => monitoring.push(d.data()));
       const pelayanan = []; pelayananSnap.forEach(d => pelayanan.push({ id: d.id, ...d.data() }));
       const kegiatan = []; kegiatanSnap.forEach(d => kegiatan.push({ id: d.id, ...d.data() }));
+
+      // Simpan global state agar bisa diakses dinamis oleh fungsi initMap()
+      this.state.currentMonitoringData = monitoring;
 
       this.renderAll({ pk, survei, primaaksi, monitoring, pelayanan, kegiatan });
     } catch (err) {
@@ -138,8 +172,6 @@ const Dashboard = {
       grid.innerHTML = `<div class="state-box">Belum ada data PK untuk periode ini.</div>`;
       return;
     }
-    // "Operasional SMFR" tidak ditampilkan sebagai kartu di sini karena sudah
-    // diwakili oleh gauge pada panel "1. Operasional SMFR di UPT".
     const fields = [
       { key: 'Piutang', label: 'Pelayanan Piutang BHP', icon: 'fa-file-circle-check', color: '#16A34A', type: 'percent' },
       { key: 'SOR', label: 'Penyelenggaraan Layanan SOR', icon: 'fa-id-card', color: '#0891B2', type: 'percent' },
@@ -185,12 +217,14 @@ const Dashboard = {
       list.innerHTML = `<div class="state-box" style="padding:10px 0;">Belum ada data monitoring untuk periode ini.</div>`;
       return;
     }
+    
     list.innerHTML = monitoring.map(r => {
       const status = String(r.status || '').toLowerCase();
-      // Baik (100%) = hijau, Rusak (75%) = merah. Status lama (Normal/Gangguan) tetap didukung untuk data lawas.
-      const color = (status.includes('baik') || status.includes('normal'))
-        ? 'var(--green)'
-        : status.includes('gangguan') ? 'var(--orange)' : 'var(--red)';
+      // Sinkronisasi warna indikator sesuai opsi 'Baik' / 'Rusak' dari inputApp
+      const color = (status.includes('baik') || status.includes('normal')) 
+        ? 'var(--green)' 
+        : 'var(--red)';
+      
       return `
         <div class="pk-site-row">
           <span class="pk-site-dot" style="background:${color};"></span>
@@ -235,7 +269,6 @@ const Dashboard = {
     const respondenBox = document.getElementById('surveyResponden');
     if (!survei) {
       box.innerHTML = `<div class="state-box">Belum ada data survei.</div>`;
-      respondenBox.innerHTML = '';
       return;
     }
     const ikm = Number(survei.IKM) || 0;
@@ -325,3 +358,88 @@ const Dashboard = {
 };
 
 document.addEventListener('DOMContentLoaded', () => Dashboard.init());
+
+
+// =========================================================================
+// CONTROLLER OVERLAY POP-UP MODAL & DINAMIS PETA INTERAKTIF LEAFLET MAP
+// =========================================================================
+
+let monitoringMap = null;
+
+function openKpiModal() {
+  document.getElementById('kpiModal').classList.add('active');
+}
+
+function closeKpiModal() {
+  document.getElementById('kpiModal').classList.remove('active');
+}
+
+function openMapModal() {
+  document.getElementById('mapModal').classList.add('active');
+  initMap(); 
+}
+
+function closeMapModal() {
+  document.getElementById('mapModal').classList.remove('active');
+}
+
+function initMap() {
+  setTimeout(() => {
+    
+    if (monitoringMap !== null) {
+      monitoringMap.remove();
+    }
+
+    // Koordinat pusat peta disesuaikan di tengah-tengah DIY & Jawa Tengah
+    monitoringMap = L.map('mapContainer').setView([-7.7800, 110.5000], 9);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(monitoringMap);
+
+    // Marker Custom Hijau (Baik) & Merah (Rusak)
+    const greenIcon = new L.Icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+      iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+    });
+
+    const redIcon = new L.Icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+      iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+    });
+
+    // MEMBUAT DATA STASIUN SECARA DINAMIS BERDASARKAN HASIL QUERY FIRESTORE
+    const monitoringDb = Dashboard.state.currentMonitoringData;
+
+    SINKRON_SITE_LIST.forEach((siteName, idx) => {
+      // Temukan data kondisi site dari firestore untuk periode terpilih
+      const dbMatch = monitoringDb.find(item => item.site === siteName);
+      
+      // Default jika data belum dimasukkan di admin/inputApp dianggap "Baik"
+      let statusKondisi = "Baik"; 
+      if (dbMatch && dbMatch.status) {
+        statusKondisi = dbMatch.status; // Mengambil text "Baik" atau "Rusak"
+      }
+
+      // Ambil objek koordinat map, jika tidak ada fallback ke koordinat default Yogyakarta pusat
+      const coords = SITE_COORDINATES[siteName] || { lat: -7.7956, lng: 110.3695 };
+      const isNormal = (statusKondisi.toLowerCase().includes('baik') || statusKondisi.toLowerCase().includes('normal'));
+      const iconPilihan = isNormal ? greenIcon : redIcon;
+
+      L.marker([coords.lat, coords.lng], { icon: iconPilihan })
+        .addTo(monitoringMap)
+        .bindPopup(`
+          <div style="font-family: 'Inter', sans-serif; font-size: 12px; line-height: 1.4;">
+            <strong style="font-size: 13px; color: #0f172a;">${siteName}</strong><br/>
+            <span style="color: #64748b;">Station Index: #0${idx + 1}</span><br/>
+            Status Lapangan: <span style="color: ${isNormal ? '#16a34a' : '#dc2626'}; font-weight: bold;">
+              ${isNormal ? '● Online (Baik)' : '■ Offline (Rusak)'}
+            </span>
+          </div>
+        `);
+    });
+
+  }, 350);
+}
