@@ -10,6 +10,68 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 <link rel="stylesheet" href="css/style.css">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+  /* CSS KUSTOM UNTUK MODAL (Agar Serasi dengan Tema Dashboard) */
+  .pk-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .pk-modal.active { display: flex; }
+  .pk-modal-content {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 100%; max-width: 1100px;
+    max-height: 85vh;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+    display: flex; flex-direction: column; overflow: hidden;
+    animation: pkFadeIn 0.3s ease;
+  }
+  .pk-modal-header {
+    padding: 16px 24px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .pk-modal-title h3 { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; color: #0f172a; }
+  .pk-modal-title p { margin: 4px 0 0 0; font-size: 12px; color: #64748b; }
+  .pk-close-btn {
+    background: #fee2e2; color: #ef4444; border: none;
+    padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 13px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .pk-close-btn:hover { background: #fca5a5; }
+  .pk-modal-body { padding: 24px; overflow-y: auto; flex-1; position: relative; }
+  
+  /* Style Tabel KPI di dalam Modal */
+  .pk-table-kpi { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+  .pk-table-kpi th, .pk-table-kpi td { border: 1px solid #cbd5e1; padding: 10px 12px; }
+  .pk-table-kpi th { background-color: #e2f0d9; color: #1e3a1e; font-weight: 700; text-align: center; }
+  
+  /* Style Peta Overlay Widget */
+  .map-stats-widget {
+    position: absolute; bottom: 20px; left: 20px; z-index: 1000;
+    background: white; padding: 14px; border-radius: 10px;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; width: 240px;
+  }
+  .map-grid-mini { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; text-align: center; margin-top: 8px; }
+  .mini-box { padding: 4px; border-radius: 6px; font-size: 10px; color: #64748b; font-weight: 500; }
+  .mini-box span { display: block; font-size: 16px; font-weight: 800; }
+
+  @keyframes pkFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+</style>
 </head>
 <body class="pk-body">
 
@@ -20,7 +82,6 @@
 
 <div class="pk-shell">
 
-  <!-- ===================== SIDEBAR ===================== -->
   <aside class="pk-sidebar" id="pkSidebar">
     <div class="pk-sidebar-brand">
       <div class="pk-sidebar-logo"><i class="fa-solid fa-satellite-dish"></i></div>
@@ -41,7 +102,6 @@
     </nav>
   </aside>
 
-  <!-- ===================== MAIN AREA ===================== -->
   <div class="pk-main" id="top">
 
     <header class="pk-topbar">
@@ -70,15 +130,13 @@
         <p>Tim Kerja Sarana Prasarana Monitoring dan Layanan</p>
       </div>
 
-      <!-- ============ KPI CARDS ============ -->
-      <section id="section-kpi" class="pk-kpi-grid">
+      <section id="section-kpi" class="pk-kpi-grid" onclick="openKpiModal()" style="cursor: pointer;" title="Klik untuk melihat detail seluruh data PK">
         <div class="state-box">Memuat...</div>
       </section>
 
-      <!-- ============ ROW: OPERASIONAL + PRIMAAKSI ============ -->
       <div class="pk-row">
-        <section id="section-operasional" class="pk-panel">
-          <h3>1. Operasional SMFR di UPT</h3>
+        <section id="section-operasional" class="pk-panel" onclick="openMapModal()" style="cursor: pointer;" title="Klik untuk membuka Geo Site Map">
+          <h3>1. Operasional SMFR di UPT <span style="font-size: 11px; color: var(--primary); margin-left: 8px;"><i class="fa-solid fa-map-location-dot"></i> Lihat Peta</span></h3>
           <div class="pk-gauge-wrap">
             <canvas id="gaugeCanvas"></canvas>
           </div>
@@ -102,20 +160,17 @@
         </section>
       </div>
 
-      <!-- ============ SURVEY PELAYANAN PUBLIK ============ -->
       <section id="section-survey" class="pk-panel pk-panel-wide">
         <h3>4. Survey Pelayanan Publik</h3>
         <div class="pk-survey-grid" id="surveyGrid"></div>
         <div class="pk-survey-responden" id="surveyResponden"></div>
       </section>
 
-      <!-- ============ REALISASI KEGIATAN SPML ============ -->
       <section id="section-pelayanan" class="pk-panel pk-panel-wide">
         <h3>Realisasi Kegiatan SPML</h3>
         <div class="pk-pelayanan-grid" id="pelayananCards"></div>
       </section>
 
-      <!-- ============ LOG KEGIATAN (DATATABLE LAMA) ============ -->
       <section id="section-kegiatan" class="pk-panel pk-panel-wide">
         <h3>Rencana &amp; Realisasi Kegiatan (Log)</h3>
         <div class="table-wrap" style="box-shadow:none; border:none; padding:0;">
@@ -129,15 +184,145 @@
   </div>
 </div>
 
-<!-- Firebase SDK (compat) -->
+
+<div class="pk-modal" id="kpiModal">
+  <div class="pk-modal-content">
+    <div class="pk-modal-header">
+      <div class="pk-modal-title">
+        <h3>KPI PK</h3>
+        <p>Data target dan capaian akurat performa kerja</p>
+      </div>
+      <button class="pk-close-btn" onclick="closeKpiModal()">Tutup [X]</button>
+    </div>
+    <div class="pk-modal-body">
+      <table class="pk-table-kpi">
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Rincian Laporan</th>
+            <th>Target UPT</th>
+            <th colspan="2">Capaian</th>
+            <th>Akumulasi s.d Bulan Ini</th>
+            <th>Keterangan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="text-center" rowspan="4">1</td>
+            <td rowspan="4" style="font-weight: 600;">Penyelenggaraan Layanan Sertifikasi Operator Radio (Penyelenggaraan UNAR, Bimtek dan Layanan MOTS)</td>
+            <td>UNAR (Target: 6)</td>
+            <td>1</td>
+            <td rowspan="4" style="text-align: center; vertical-align: middle; font-weight: bold;">8.33%</td>
+            <td rowspan="4" style="text-align: center; vertical-align: middle; font-weight: bold;">49.98%</td>
+            <td rowspan="4">
+              1. Telah dilaksanakan UNAR 1x (UNAR Reguler V) pada bulan Juni 2026;<br>
+              2. Capaian s/d bulan Juni adalah 41.65%, 6 (enam) kegiatan:<br>
+              &nbsp;&nbsp;&nbsp;a. 1 (satu) kegiatan UNAR Non Reguler<br>
+              &nbsp;&nbsp;&nbsp;b. 5 (lima) kegiatan UNAR Reguler<br>
+              3. Kegiatan SOR yang lain belum dilaksanakan.
+            </td>
+          </tr>
+          <tr><td>Bimtek SRC/LRC IKRAN (Target: 1)</td><td>0</td></tr>
+          <tr><td>Bimtek IKRAN (Target: 1)</td><td>0</td></tr>
+          <tr><td>Layanan MOTS (Target: 4)</td><td>0</td></tr>
+          
+          <tr>
+            <td style="text-center" rowspan="2">2</td>
+            <td rowspan="2" style="font-weight: 600;">Pelaksanaan Penanganan Piutang BHP Frekuensi Radio</td>
+            <td>Jumlah Invoice per bulan (Target: 62)</td><td>62</td>
+            <td rowspan="2" style="text-align: center; vertical-align: middle; font-weight: bold;">100%</td>
+            <td rowspan="2" style="text-align: center; vertical-align: middle; font-weight: bold;">100%</td>
+            <td rowspan="2">
+              Invoice tersampaikan baik melalui media pos, WA, download mandiri, datang ke kantor dan klarifikasi.<br><br>
+              Klarifikasi BHP Frekuensi Radio kepada 6 (enam) Wajib Bayar.
+            </td>
+          </tr>
+          <tr><td>Penyampaian laporan koordinasi penanganan piutang per bulan (Target: 1)</td><td>1</td></tr>
+
+          <tr>
+            <td style="text-center">3</td>
+            <td style="font-weight: 600;">Pemenuhan Nilai LKE Pembangunan Zona Integritas menuju WBK</td>
+            <td>LKE ZI (Target: 75)</td>
+            <td>99.18</td>
+            <td style="text-align: center; font-weight: bold;">100%</td>
+            <td style="text-align: center; font-weight: bold;">100%</td>
+            <td>
+              1. Pemenuhan dokumen untuk semua Area Pembangunan;<br>
+              2. Hasil penilaian Eselon I = 91.13;<br>
+              3. Hasil penilaian TPI = 90.89
+            </td>
+          </tr>
+
+          <tr>
+            <td style="text-center">4</td>
+            <td style="font-weight: 600;">Pelaksanaan Survey Kepuasan Pelayanan Publik (IKM/IPKP)</td>
+            <td>Hasil survey IKM (Target: 3.6)</td>
+            <td>3.91</td>
+            <td style="text-align: center; font-weight: bold;">100%</td>
+            <td style="text-align: center; font-weight: bold;">100%</td>
+            <td>Jumlah responden: 16 Responden</td>
+          </tr>
+
+          <tr>
+            <td style="text-center">5</td>
+            <td style="font-weight: 600;">Pelaksanaan Survey Integritas Pelayanan Publik (IIPP/IPAK)</td>
+            <td>Hasil survey IIPP (Target: 9)</td>
+            <td>9.77</td>
+            <td style="text-align: center; font-weight: bold;">100%</td>
+            <td style="text-align: center; font-weight: bold;">100%</td>
+            <td>Jumlah responden: 16 Responden</td>
+          </tr>
+
+          <tr>
+            <td style="text-center">6</td>
+            <td style="font-weight: 600;">Tindak Lanjut Verifikasi Site ISR Microwave Link yang Tidak Sesuai (PrimaAksi)</td>
+            <td>Jumlah data verifikasi site yang tidak sesuai (Target: 476)</td>
+            <td>150</td>
+            <td style="text-align: center; font-weight: bold;">22%</td>
+            <td style="text-align: center; font-weight: bold;">73%</td>
+            <td>Total capaian ISR = 348</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="pk-modal" id="mapModal">
+  <div class="pk-modal-content">
+    <div class="pk-modal-header">
+      <div class="pk-modal-title">
+        <h3>Geo Site Map</h3>
+        <p>Geographic distribution of monitoring servers (9 stations) - Real-time network monitoring across Indonesia</p>
+      </div>
+      <button class="pk-close-btn" onclick="closeMapModal()">Tutup [X]</button>
+    </div>
+    <div class="pk-modal-body" style="padding:0; height:60vh;">
+      <div id="mapContainer" style="width: 100%; height: 100%;"></div>
+      
+      <div class="map-stats-widget">
+        <span style="font-size: 10px; font-weight: 800; color: #1e3a8a; letter-spacing: 0.3px; display: block;">ID Indonesia Network Coverage</span>
+        <div class="map-grid-mini">
+          <div class="mini-box" style="background:#eff6ff; border: 1px solid #bfdbfe;"><span style="color:#2563eb;">9</span>Total</div>
+          <div class="mini-box" style="background:#f0fdf4; border: 1px solid #bbf7d0;"><span style="color:#16a34a;">7</span>Online</div>
+          <div class="mini-box" style="background:#fef2f2; border: 1px solid #fecaca;"><span style="color:#dc2626;">2</span>Offline</div>
+        </div>
+        <div style="font-size: 11px; display: flex; justify-content: space-between; margin-top: 10px; padding-top: 8px; border-top: 1px solid #f1f5f9;">
+          <span style="color:#64748b;">Network Status:</span>
+          <span style="color:#16a34a; font-weight:700;"><i class="fa-solid fa-circle text-xs"></i> 78% Up</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<!-- jQuery + DataTables -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 <script src="js/firebase-config.js"></script>
@@ -145,5 +330,32 @@
 <script src="js/utils.js"></script>
 <script src="js/charts.js"></script>
 <script src="js/dashboard.js"></script>
+
+<script>
+  function openKpiModal() {
+    document.getElementById('kpiModal').classList.add('active');
+  }
+  function closeKpiModal() {
+    document.getElementById('kpiModal').classList.remove('active');
+  }
+
+  // Fungsi Peta Terkoneksi dengan file js/dashboard.js
+  function openMapModal() {
+    document.getElementById('mapModal').classList.add('active');
+    if (typeof initMap === "function") {
+      initMap(); // Memanggil fungsi pengganti warna pin yang ada di dashboard.js
+    }
+  }
+  function closeMapModal() {
+    document.getElementById('mapModal').classList.remove('active');
+  }
+
+  // Tutup otomatis jika area luar modal diklik
+  window.onclick = function(event) {
+    if (event.target.classList.contains('pk-modal')) {
+      event.target.classList.remove('active');
+    }
+  }
+</script>
 </body>
 </html>
