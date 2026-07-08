@@ -256,7 +256,7 @@ const Dashboard = {
 
     if (pct >= 90) return { text: 'Sudah Dilaksanakan', cls: 'pk-pill-success' };
 
-    if (pct >= 1) return { text: 'Sudah Dilaksanakan', cls: 'pk-pill-warning' };
+    if (pct >= 1) return { text: 'Sudah Dilaksanakan', cls: 'pk-pill-success' };
 
     return { text: 'Belum Dilaksanakan', cls: 'pk-pill-danger' };
 
