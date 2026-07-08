@@ -20,7 +20,6 @@
 
 <div class="pk-shell">
 
-  <!-- ===================== SIDEBAR ===================== -->
   <aside class="pk-sidebar" id="pkSidebar">
     <div class="pk-sidebar-brand">
       <div class="pk-sidebar-logo"><i class="fa-solid fa-satellite-dish"></i></div>
@@ -37,12 +36,10 @@
       <a href="#section-survey" class="pk-nav-item"><i class="fa-solid fa-star"></i> Survey</a>
       <a href="#section-primaaksi" class="pk-nav-item"><i class="fa-solid fa-chart-pie"></i> PrimaAksi</a>
       <a href="#section-kegiatan" class="pk-nav-item"><i class="fa-regular fa-calendar-check"></i> Kegiatan</a>
-      <a href="#section-realisasi" class="pk-nav-item"><i class="fa-solid fa-table-list"></i> Realisasi</a>
       <a href="input.html" class="pk-nav-item"><i class="fa-regular fa-calendar-days"></i> Data Bulanan</a>
     </nav>
   </aside>
 
-  <!-- ===================== MAIN AREA ===================== -->
   <div class="pk-main" id="top">
 
     <header class="pk-topbar">
@@ -71,12 +68,10 @@
         <p>Tim Kerja Sarana Prasarana Monitoring dan Layanan</p>
       </div>
 
-      <!-- ============ KPI CARDS ============ -->
       <section id="section-kpi" class="pk-kpi-grid" >
         <div class="state-box">Memuat...</div>
       </section>
 
-      <!-- ============ ROW: OPERASIONAL + PRIMAAKSI ============ -->
       <div class="pk-row">
         <section id="section-operasional" class="pk-panel">
           <h3>1. Operasional SMFR di UPT</h3>
@@ -103,7 +98,6 @@
         </section>
       </div>
 
-      <!-- ============ ROW: SURVEY + PELAYANAN ============ -->
       <div class="pk-row">
         <section id="section-survey" class="pk-panel">
           <h3>Survey Pelayanan Publik</h3>
@@ -111,20 +105,11 @@
         </section>
 
         <section id="section-pelayanan" class="pk-panel">
-          <h3>Pelayanan Publik</h3>
+          <h3>Realisasi Kegiatan Tim Kerja SPML</h3>
           <div class="pk-pelayanan-grid" id="pelayananCards"></div>
         </section>
       </div>
 
-      <!-- ============ REALISASI KEGIATAN (TABLE) ============ -->
-      <section id="section-realisasi" class="pk-panel pk-panel-wide">
-        <h3>Realisasi Kegiatan Tim Kerja SPML</h3>
-        <div class="pk-table-wrap" id="realisasiTableWrap">
-          <div class="state-box">Memuat...</div>
-        </div>
-      </section>
-
-      <!-- ============ LOG KEGIATAN (DATATABLE LAMA) ============ -->
       <section id="section-kegiatan" class="pk-panel pk-panel-wide">
         <h3>Rencana &amp; Realisasi Kegiatan (Log)</h3>
         <div class="table-wrap" style="box-shadow:none; border:none; padding:0;">
@@ -138,15 +123,12 @@
   </div>
 </div>
 
-<!-- Firebase SDK (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<!-- jQuery + DataTables -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 <script src="js/firebase-config.js"></script>
