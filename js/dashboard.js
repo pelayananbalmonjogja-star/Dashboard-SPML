@@ -306,9 +306,9 @@ const Dashboard = {
 
       { key: 'LKE', label: 'LKE Pembangunan ZI', icon: 'fa-shield-halved', color: '#7C3AED', type: 'percent' },
 
-      { key: 'IKM', label: 'IKM / IPKP SKALA 4', icon: 'fa-face-smile', color: '#F59E0B', type: 'star', max: 4 },
+      { key: 'IKM', label: 'IKM / IPKP SKALA 4', icon: 'fa-face-smile', color: '#F59E0B' },
 
-      { key: 'IPAK', label: 'IIPP / IPAK SKALA 10', icon: 'fa-shield-heart', color: '#0D9488', type: 'star', max: 10 },
+      { key: 'IPAK', label: 'IIPP / IPAK SKALA 10', icon: 'fa-shield-heart', color: '#0D9488' },
 
       { key: 'PrimaAksi', label: 'PrimaAksi', icon: 'fa-bullseye', color: '#DC2626', type: 'percent' }
 
