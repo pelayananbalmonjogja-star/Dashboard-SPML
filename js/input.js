@@ -49,11 +49,35 @@ const InputApp = {
     });
 
     this.setupSingleForm({
+      formId: 'formTamu',
+      collection: 'tamuLayanan',
+      tahunId: 'tamuTahun', bulanId: 'tamuBulan',
+      fields: ['TamuBroadcast', 'TamuNonBroadcast', 'PelayananOnline', 'PelayananOffline'],
+      statusId: 'tamuStatus'
+    });
+
+    this.setupSingleForm({
       formId: 'formPrimaaksi',
       collection: 'primaaksi',
       tahunId: 'primaaksiTahun', bulanId: 'primaaksiBulan',
       fields: ['Sesuai', 'Tidak'],
       statusId: 'primaaksiStatus'
+    });
+
+    this.setupSingleForm({
+      formId: 'formIsrTerbit',
+      collection: 'isrTerbit',
+      tahunId: 'isrTerbitTahun', bulanId: 'isrTerbitBulan',
+      fields: ['Terbit', 'Cabut'],
+      statusId: 'isrTerbitStatus'
+    });
+
+    this.setupSingleForm({
+      formId: 'formSpp',
+      collection: 'sppBhp',
+      tahunId: 'sppTahun', bulanId: 'sppBulan',
+      fields: ['SPPAnnual', 'SPPReminder', 'SPPNew', 'SPPRenewal'],
+      statusId: 'sppStatus'
     });
 
     this.setupSiteChecklist();
