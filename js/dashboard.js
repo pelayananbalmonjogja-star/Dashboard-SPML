@@ -144,7 +144,7 @@ const Dashboard = {
 
 
 
-      const [pkSnap, surveiSnap, primaaksiSnap, monitoringSnap, pelayananSnap, kegiatanSnap] = await Promise.all([
+      const [pkSnap, surveiSnap, primaaksiSnap, monitoringSnap, pelayananSnap, kegiatanSnap, tamuSnap, sppSnap, isrTerbitSnap] = await Promise.all([
 
         db.collection('pk').doc(id).get(),
 
@@ -156,7 +156,13 @@ const Dashboard = {
 
         db.collection('pelayanan').where('tahun', '==', tahun).where('bulan', '==', bulan).get(),
 
-        db.collection('kegiatan').where('tahun', '==', tahun).where('bulan', '==', bulan).get()
+        db.collection('kegiatan').where('tahun', '==', tahun).where('bulan', '==', bulan).get(),
+
+        db.collection('tamuLayanan').doc(id).get(),
+
+        db.collection('sppBhp').doc(id).get(),
+
+        db.collection('isrTerbit').doc(id).get()
 
       ]);
 
@@ -174,9 +180,15 @@ const Dashboard = {
 
       const kegiatan = []; kegiatanSnap.forEach(d => kegiatan.push({ id: d.id, ...d.data() }));
 
+      const tamu = tamuSnap.exists ? tamuSnap.data() : null;
+
+      const spp = sppSnap.exists ? sppSnap.data() : null;
+
+      const isrTerbit = isrTerbitSnap.exists ? isrTerbitSnap.data() : null;
 
 
-      this.renderAll({ pk, survei, primaaksi, monitoring, pelayanan, kegiatan });
+
+      this.renderAll({ pk, survei, primaaksi, monitoring, pelayanan, kegiatan, tamu, spp, isrTerbit });
 
     } catch (err) {
 
@@ -211,6 +223,10 @@ const Dashboard = {
     this.renderPrimaaksi(data.primaaksi, data.pk);
 
     this.renderSurvey(data.survei);
+
+    this.renderTamu(data.tamu);
+
+    this.renderIsrSpp(data.isrTerbit, data.spp);
 
     this.renderPelayanan(data.pelayanan);
 
@@ -525,6 +541,94 @@ const Dashboard = {
   },
 
 
+
+  /* ---------------- JUMLAH TAMU PELAYANAN (format sama seperti survey) ---------------- */
+  renderTamu(tamu) {
+    const box = document.getElementById('tamuGrid');
+    const ooBox = document.getElementById('pelayananOOGrid');
+    if (!tamu) {
+      box.innerHTML = `<div class="state-box">Belum ada data tamu pelayanan.</div>`;
+      ooBox.innerHTML = '';
+      return;
+    }
+    const broadcast = Number(tamu.TamuBroadcast) || 0;
+    const nonBroadcast = Number(tamu.TamuNonBroadcast) || 0;
+    const online = Number(tamu.PelayananOnline) || 0;
+    const offline = Number(tamu.PelayananOffline) || 0;
+
+    box.innerHTML = `
+      <div class="pk-survey-card">
+        <div class="pk-survey-value">${broadcast}</div>
+        <div class="pk-survey-label">Tamu Broadcast</div>
+      </div>
+      <div class="pk-survey-card">
+        <div class="pk-survey-value">${nonBroadcast}</div>
+        <div class="pk-survey-label">Tamu Non Broadcast</div>
+      </div>`;
+
+    ooBox.innerHTML = `
+      <div class="pk-survey-card">
+        <div class="pk-survey-value">${online}</div>
+        <div class="pk-survey-label">Pelayanan Online</div>
+      </div>
+      <div class="pk-survey-card">
+        <div class="pk-survey-value">${offline}</div>
+        <div class="pk-survey-label">Pelayanan Offline</div>
+      </div>`;
+  },
+
+  /* ---------------- PENERBITAN/PENCABUTAN ISR & SPP BHP (icon cards) ---------------- */
+  renderIsrSpp(isr, spp) {
+    const isrBox = document.getElementById('isrCards');
+    if (!isr) {
+      isrBox.innerHTML = `<div class="state-box">Belum ada data ISR untuk periode ini.</div>`;
+    } else {
+      const terbit = Number(isr.Terbit) || 0;
+      const cabut = Number(isr.Cabut) || 0;
+      isrBox.innerHTML = `
+        <div class="pk-pelayanan-card">
+          <div class="pk-pelayanan-icon"><i class="fa-solid fa-file-circle-check"></i></div>
+          <div class="pk-pelayanan-value">${terbit}</div>
+          <div class="pk-pelayanan-label">Jumlah Terbit ISR</div>
+        </div>
+        <div class="pk-pelayanan-card">
+          <div class="pk-pelayanan-icon"><i class="fa-solid fa-file-circle-xmark"></i></div>
+          <div class="pk-pelayanan-value">${cabut}</div>
+          <div class="pk-pelayanan-label">Jumlah ISR Tercabut</div>
+        </div>`;
+    }
+
+    const sppBox = document.getElementById('sppCards');
+    if (!spp) {
+      sppBox.innerHTML = `<div class="state-box">Belum ada data SPP BHP untuk periode ini.</div>`;
+    } else {
+      const annual = Number(spp.SPPAnnual) || 0;
+      const reminder = Number(spp.SPPReminder) || 0;
+      const baru = Number(spp.SPPNew) || 0;
+      const renewal = Number(spp.SPPRenewal) || 0;
+      sppBox.innerHTML = `
+        <div class="pk-pelayanan-card">
+          <div class="pk-pelayanan-icon"><i class="fa-solid fa-calendar-check"></i></div>
+          <div class="pk-pelayanan-value">${annual}</div>
+          <div class="pk-pelayanan-label">SPP Annual</div>
+        </div>
+        <div class="pk-pelayanan-card">
+          <div class="pk-pelayanan-icon"><i class="fa-solid fa-bell"></i></div>
+          <div class="pk-pelayanan-value">${reminder}</div>
+          <div class="pk-pelayanan-label">SPP Reminder</div>
+        </div>
+        <div class="pk-pelayanan-card">
+          <div class="pk-pelayanan-icon"><i class="fa-solid fa-file-circle-plus"></i></div>
+          <div class="pk-pelayanan-value">${baru}</div>
+          <div class="pk-pelayanan-label">SPP New</div>
+        </div>
+        <div class="pk-pelayanan-card">
+          <div class="pk-pelayanan-icon"><i class="fa-solid fa-rotate"></i></div>
+          <div class="pk-pelayanan-value">${renewal}</div>
+          <div class="pk-pelayanan-label">SPP Renewal</div>
+        </div>`;
+    }
+  },
 
   /* ---------------- PELAYANAN PUBLIK (icon cards) ---------------- */
 
