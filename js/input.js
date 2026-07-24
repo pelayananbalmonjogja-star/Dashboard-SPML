@@ -99,6 +99,15 @@ const InputApp = {
       listId: 'kegiatanList',
       rowLabel: (d) => `${d.tanggalMulai || ''} s.d ${d.tanggalSelesai || ''} — ${d.judul}`
     });
+
+    this.setupMultiForm({
+      formId: 'formCatatan',
+      collection: 'catatan',
+      tahunId: 'catatanTahun', bulanId: 'catatanBulan',
+      fields: ['minggu', 'isi'],
+      listId: 'catatanList',
+      rowLabel: (d) => `${d.minggu} — ${d.isi}`
+    });
   },
 
   setupTabs() {
