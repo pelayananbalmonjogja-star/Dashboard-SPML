@@ -276,11 +276,11 @@ const Dashboard = {
 
   pillFor(pct) {
 
-    if (pct >= 90) return { text: 'Sudah Dilaksanakan', cls: 'pk-pill-success' };
+    if (pct >= 90) return { text: 'Sudah Tercapai', cls: 'pk-pill-success' };
 
-    if (pct >= 1) return { text: 'Sudah Dilaksanakan', cls: 'pk-pill-success' };
+    if (pct >= 1) return { text: 'Sudah Tercapai', cls: 'pk-pill-success' };
 
-    return { text: 'Belum Dilaksanakan', cls: 'pk-pill-danger' };
+    return { text: 'Belum Tercapai', cls: 'pk-pill-danger' };
 
   },
 
