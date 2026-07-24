@@ -980,29 +980,7 @@ footer {
 .pk-realisasi-note-ok { color: var(--text-muted); }
 .pk-realisasi-note-bad { color: var(--red); font-weight: 600; }
 
-/* ---------- Catatan / Notes table ---------- */
-.pk-notes-hint {
-  font-size: 12.5px;
-  color: var(--text-muted);
-  margin: 0 0 14px;
-}
-.pk-notes-hint code {
-  background: var(--gray-bg);
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-size: 11.5px;
-}
-.pk-notes-toggle-all {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  color: var(--navy);
-  font-weight: 600;
-  cursor: pointer;
-  margin: 0 0 14px;
-}
-.pk-notes-toggle-all input { cursor: pointer; }
+/* ---------- Catatan table (read-only) ---------- */
 .pk-notes-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .pk-notes-table th {
   background: var(--navy); color: #fff; text-align: left; padding: 10px 12px;
@@ -1014,30 +992,8 @@ footer {
   vertical-align: top;
 }
 .pk-notes-table tr:hover td { background: var(--gray-bg); }
-.pk-notes-month {
-  font-weight: 700;
-  color: var(--navy);
-  background: rgba(18,44,111,0.04);
-  vertical-align: middle !important;
-}
-.pk-notes-week { color: var(--text-muted); font-weight: 600; white-space: nowrap; }
-.pk-notes-isi {
-  min-height: 20px;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.pk-notes-isi[contenteditable="true"]:hover { background: rgba(18,44,111,0.03); cursor: text; }
-.pk-notes-isi[contenteditable="true"]:focus {
-  outline: 2px solid rgba(18,44,111,0.25);
-  outline-offset: -2px;
-  background: #fff;
-}
-.pk-notes-isi:empty::before {
-  content: "Klik untuk isi catatan...";
-  color: var(--text-muted);
-  opacity: .55;
-  font-style: italic;
-}
+.pk-notes-week { color: var(--navy); font-weight: 700; white-space: nowrap; }
+.pk-notes-isi { white-space: pre-wrap; word-break: break-word; }
 
 .pk-footnote {
   display: flex; align-items: flex-start; gap: 10px;
