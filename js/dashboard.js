@@ -144,7 +144,7 @@ const Dashboard = {
 
 
 
-      const [pkSnap, surveiSnap, primaaksiSnap, monitoringSnap, pelayananSnap, kegiatanSnap, tamuSnap, sppSnap, isrTerbitSnap] = await Promise.all([
+      const [pkSnap, surveiSnap, primaaksiSnap, monitoringSnap, pelayananSnap, kegiatanSnap, tamuSnap, sppSnap, isrTerbitSnap, catatanSnap] = await Promise.all([
 
         db.collection('pk').doc(id).get(),
 
@@ -162,7 +162,9 @@ const Dashboard = {
 
         db.collection('sppBhp').doc(id).get(),
 
-        db.collection('isrTerbit').doc(id).get()
+        db.collection('isrTerbit').doc(id).get(),
+
+        db.collection('catatan').where('tahun', '==', tahun).where('bulan', '==', bulan).get()
 
       ]);
 
@@ -186,9 +188,11 @@ const Dashboard = {
 
       const isrTerbit = isrTerbitSnap.exists ? isrTerbitSnap.data() : null;
 
+      const catatan = []; catatanSnap.forEach(d => catatan.push({ id: d.id, ...d.data() }));
 
 
-      this.renderAll({ pk, survei, primaaksi, monitoring, pelayanan, kegiatan, tamu, spp, isrTerbit });
+
+      this.renderAll({ pk, survei, primaaksi, monitoring, pelayanan, kegiatan, tamu, spp, isrTerbit, catatan });
 
     } catch (err) {
 
@@ -231,6 +235,8 @@ const Dashboard = {
     this.renderPelayanan(data.pelayanan);
 
     this.renderKegiatanLog(data.kegiatan);
+
+    this.renderCatatan(data.catatan);
 
     this.renderFootnote();
 
@@ -765,6 +771,50 @@ const Dashboard = {
       }
 
     });
+
+  },
+
+
+
+  /* ---------------- CATATAN (read-only, diisi dari halaman Input) ---------------- */
+
+  renderCatatan(rows) {
+
+    const wrap = document.getElementById('catatanWrap');
+
+    if (!wrap) return;
+
+    if (!rows || rows.length === 0) {
+
+      wrap.innerHTML = `<div class="state-box">Belum ada catatan untuk periode ini.</div>`;
+
+      return;
+
+    }
+
+    const mingguOrder = ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'];
+
+    const sorted = [...rows].sort((a, b) => mingguOrder.indexOf(a.minggu) - mingguOrder.indexOf(b.minggu));
+
+    const body = sorted.map(r => `
+
+      <tr>
+
+        <td class="pk-notes-week">${Utils.escape(r.minggu || '-')}</td>
+
+        <td class="pk-notes-isi">${Utils.escape(r.isi || '').replace(/\n/g, '<br>')}</td>
+
+      </tr>`).join('');
+
+    wrap.innerHTML = `
+
+      <table class="pk-notes-table">
+
+        <thead><tr><th style="width:16%;">Minggu</th><th>Catatan</th></tr></thead>
+
+        <tbody>${body}</tbody>
+
+      </table>`;
 
   },
 
