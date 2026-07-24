@@ -63,6 +63,7 @@
     <button class="tab-btn" data-target="tabSpp">Penerbitan SPP BHP</button>
     <button class="tab-btn" data-target="tabPelayanan">Realisasi Kegiatan SPML</button>
     <button class="tab-btn" data-target="tabKegiatan">Rencana Kegiatan</button>
+    <button class="tab-btn" data-target="tabCatatan">Catatan</button>
   </nav>
 
   <div class="tab-content">
@@ -254,6 +255,32 @@
           <div class="form-actions"><button type="submit" class="btn-primary">Tambah Data</button></div>
         </form>
         <div class="mini-list" id="kegiatanList"></div>
+      </div>
+    </div>
+
+    <!-- ============ TAB CATATAN ============ -->
+    <div class="tab-panel" id="tabCatatan">
+      <div class="form-card">
+        <h3>Catatan</h3>
+        <p class="hint">Satu catatan mewakili satu Minggu dalam periode (Tahun + Bulan). Bisa lebih dari satu catatan per minggu.</p>
+        <form id="formCatatan">
+          <div class="form-row">
+            <div class="field"><label>Tahun</label><input type="number" id="catatanTahun" class="tahun-input" required></div>
+            <div class="field"><label>Bulan</label><select id="catatanBulan" class="bulan-select" required></select></div>
+            <div class="field">
+              <label>Minggu</label>
+              <select id="formCatatan_minggu" required>
+                <option value="Minggu 1">Minggu 1</option>
+                <option value="Minggu 2">Minggu 2</option>
+                <option value="Minggu 3">Minggu 3</option>
+                <option value="Minggu 4">Minggu 4</option>
+              </select>
+            </div>
+          </div>
+          <div class="field"><label>Isi Catatan</label><textarea id="formCatatan_isi" required placeholder="Tulis catatan di sini..."></textarea></div>
+          <div class="form-actions"><button type="submit" class="btn-primary">Tambah Data</button></div>
+        </form>
+        <div class="mini-list" id="catatanList"></div>
       </div>
     </div>
 
