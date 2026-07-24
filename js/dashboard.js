@@ -364,6 +364,8 @@ const Dashboard = {
 
           <div class="pk-kpi-label">${f.label}</div>
 
+          ${f.scale ? `<div class="pk-kpi-scale">${f.scale}</div>` : ''}
+
           <span class="pk-pill ${pill.cls}">${pill.text}</span>
 
         </div>`;
