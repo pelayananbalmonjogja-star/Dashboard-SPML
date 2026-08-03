@@ -44,7 +44,7 @@ const InputApp = {
       formId: 'formSurvei',
       collection: 'survei',
       tahunId: 'surveiTahun', bulanId: 'surveiBulan',
-      fields: ['IKM', 'IPAK', 'Responden'],
+      fields: ['IKM', 'IPAK', 'Responden', 'Keterangan'],
       statusId: 'surveiStatus'
     });
 
