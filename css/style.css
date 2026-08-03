@@ -7,29 +7,29 @@
 
 /* =========================================================
    PK DASHBOARD - STYLESHEET
-   Palet Custom: Navy (#122C6F) - Hijau (#40D872) - Oranye-Merah (#F13B1C)
-                 Biru Muda (#6695ED) - Crimson (#B82638)
+   Palet Custom: Merah Cetar (#E4002B) - Hijau (#40D872)
+                 Kuning Cetar (#FFC700) - Merah Gelap (#B30000)
    ========================================================= */
 
 :root {
-  --navy: #122C6F;
-  --navy-light: #6695ED;
-  --navy-dark: #0B1D4A;
+  --navy: #E4002B;
+  --navy-light: #FFC700;
+  --navy-dark: #B30000;
   --green: #40D872;
-  --orange: #F13B1C;
-  --red: #B82638;
-  --gray-bg: #EAF0FE;
-  --page-bg-start: #EEF3FE;
-  --page-bg-end: #DCE6FC;
+  --orange: #FFC700;
+  --red: #E4002B;
+  --gray-bg: #FFF3B0;
+  --page-bg-start: #FFFFFF;
+  --page-bg-end: #FFF7DE;
   --white: #FFFFFF;
-  --text-main: #1B2437;
-  --text-muted: #6B7590;
-  --border: #D7E1F5;
-  --shadow-sm: 0 1px 2px rgba(18, 44, 111, 0.08);
-  --shadow-md: 0 4px 16px rgba(18, 44, 111, 0.12);
-  --shadow-lg: 0 12px 32px rgba(18, 44, 111, 0.18);
+  --text-main: #241010;
+  --text-muted: #7A5A20;
+  --border: #FFD966;
+  --shadow-sm: 0 1px 2px rgba(228, 0, 43, 0.10);
+  --shadow-md: 0 4px 16px rgba(228, 0, 43, 0.16);
+  --shadow-lg: 0 12px 32px rgba(228, 0, 43, 0.24);
   --radius: 16px;
-  --radius-sm: 10px;
+  --radius-sm: 12px;
 }
 
 * { box-sizing: border-box; }
@@ -41,7 +41,39 @@ body {
   color: var(--text-main);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
+  position: relative;
 }
+
+/* ---------- Aksen dekoratif: garis diagonal merah-kuning di tepi kiri ---------- */
+body::before {
+  content: "";
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: 16px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--navy) 0px, var(--navy) 10px,
+    var(--orange) 10px, var(--orange) 20px,
+    var(--navy-dark) 20px, var(--navy-dark) 30px
+  );
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ---------- Aksen dekoratif: pola titik-titik emas di pojok kanan-atas ---------- */
+body::after {
+  content: "";
+  position: fixed;
+  right: 0; top: 0;
+  width: 220px; height: 160px;
+  background-image: radial-gradient(var(--orange) 1.6px, transparent 1.6px);
+  background-size: 14px 14px;
+  opacity: .35;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.pk-shell { position: relative; z-index: 1; margin-left: 16px; }
 
 h1, h2, h3, h4, .display-font {
   font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
@@ -356,12 +388,40 @@ table.dataTable thead th {
   letter-spacing: 0.3px;
 }
 table.dataTable tbody tr:hover { background: var(--gray-bg); }
+table.dataTable tbody td { color: var(--text-main); border-color: var(--border) !important; }
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {
+  background: var(--gray-bg);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+.dataTables_wrapper .dataTables_filter label,
+.dataTables_wrapper .dataTables_length label,
+.dataTables_wrapper .dataTables_info {
+  color: var(--text-muted);
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+  color: var(--text-main) !important;
+  border-radius: 6px;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+  background: var(--navy) !important;
+  border-color: var(--navy) !important;
+  color: #fff !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+  background: var(--gray-bg) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border) !important;
+}
 
 /* ---------- Loading overlay ---------- */
 #loadingOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(243,244,246,0.85);
+  background: rgba(255,255,255,0.92);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -373,7 +433,7 @@ table.dataTable tbody tr:hover { background: var(--gray-bg); }
 .spinner {
   width: 42px;
   height: 42px;
-  border: 4px solid rgba(18,44,111,0.15);
+  border: 4px solid rgba(228,0,43,0.15);
   border-top-color: var(--navy);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -633,7 +693,7 @@ footer {
   cursor: pointer;
   font-size: 12px;
 }
-.btn-icon.btn-edit:hover { background: rgba(18,44,111,0.1); color: var(--navy); }
+.btn-icon.btn-edit:hover { background: rgba(228,0,43,0.1); color: var(--navy); }
 .btn-icon.btn-delete:hover { background: rgba(220,38,38,0.1); color: var(--red); }
 
 /* ---------- Site checklist (Kondisi Stasiun Monitoring SMFR) ---------- */
@@ -740,7 +800,7 @@ footer {
 }
 .pk-nav-item i { width: 18px; text-align: center; color: var(--text-muted); }
 .pk-nav-item:hover { background: var(--gray-bg); }
-.pk-nav-item.active { background: rgba(18,44,111,0.08); color: var(--navy); border-left: 3px solid var(--orange); padding-left: 11px; }
+.pk-nav-item.active { background: rgba(228,0,43,0.08); color: var(--navy); border-left: 3px solid var(--orange); padding-left: 11px; }
 .pk-nav-item.active i { color: var(--navy); }
 
 /* ---------- Main area ---------- */
@@ -749,7 +809,7 @@ footer {
 .pk-topbar {
   background: var(--white);
   border-bottom: 1px solid var(--border);
-  padding: 14px 26px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -777,29 +837,29 @@ footer {
 .pk-topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
 .pk-periode-pill {
   display: flex; align-items: center; gap: 8px;
-  background: var(--gray-bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 8px 14px;
+  background: var(--orange);
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
   font-size: 13px;
-  color: var(--navy);
+  color: #5C3D00;
 }
-.pk-periode-pill i { color: var(--text-muted); }
-.pk-periode-label { font-weight: 600; color: var(--text-muted); font-size: 12px; }
+.pk-periode-pill i { color: #5C3D00; }
+.pk-periode-label { font-weight: 700; color: #5C3D00; font-size: 12.5px; }
 .pk-periode-pill select {
-  border: none; background: transparent; font-weight: 700; color: var(--navy);
+  border: none; background: transparent; font-weight: 800; color: #5C3D00;
   font-size: 13.5px; outline: none; cursor: pointer;
 }
 .pk-icon-btn {
-  width: 38px; height: 38px; border-radius: 10px;
-  border: 1px solid var(--border); background: var(--white);
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 2px solid var(--navy); background: var(--white);
   color: var(--navy); cursor: pointer; font-size: 14px;
   display: flex; align-items: center; justify-content: center;
   transition: background .15s ease;
 }
 .pk-icon-btn:hover { background: var(--gray-bg); }
 
-.pk-content { max-width: 1400px; margin: 0 auto; padding: 24px 26px 60px; }
+.pk-content { max-width: 1500px; margin: 0 auto; padding: 14px 16px 40px; }
 
 .pk-page-header { margin-bottom: 22px; }
 .pk-page-header h1 { margin: 0; font-size: 22px; color: var(--navy); letter-spacing: .3px; }
@@ -808,20 +868,40 @@ footer {
 /* ---------- KPI cards (colorful) ---------- */
 .pk-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
-  gap: 16px;
-  margin-bottom: 22px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
 }
 .pk-kpi-card {
   background: var(--white);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
-  padding: 18px 16px;
+  padding: 10px 10px 12px;
   text-align: center;
-  transition: transform .18s ease, box-shadow .18s ease;
+  transition: transform .15s ease, box-shadow .15s ease;
 }
-.pk-kpi-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.pk-kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+/* Grafana-style small gauge panel */
+.pk-gauge-card { padding: 8px 8px 10px; }
+.pk-gauge-card-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 0 2px 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pk-gauge-card-body { position: relative; height: 90px; }
+.pk-gauge-card-footer { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.pk-gauge-card-footer .pk-pill { margin-top: 0; padding: 2px 9px; font-size: 10px; }
+.pk-gauge-card-footer .pk-kpi-scale { margin-top: 0; padding: 2px 8px; font-size: 9.5px; }
+
 .pk-kpi-icon {
   width: 56px; height: 56px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
@@ -833,37 +913,47 @@ footer {
   font-size: 10.5px;
   font-weight: 700;
   color: var(--navy);
-  background: rgba(29, 78, 216, 0.08);
+  background: #fff;
+  border: 1.5px solid var(--navy);
   display: inline-block;
-  padding: 2px 9px;
+  padding: 1px 9px;
   border-radius: 999px;
-  margin-top: 5px;
+  margin-top: 6px;
   letter-spacing: 0.3px;
 }
 .pk-kpi-stars { color: var(--orange); font-size: 14px; margin-top: 6px; letter-spacing: 2px; }
-.pk-pill { display: inline-block; margin-top: 10px; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; }
-.pk-pill-success { background: rgba(22,163,74,0.12); color: var(--green); }
-.pk-pill-warning { background: rgba(245,158,11,0.15); color: #B45309; }
-.pk-pill-danger { background: rgba(220,38,38,0.12); color: var(--red); }
+.pk-pill { display: inline-block; margin-top: 10px; padding: 5px 14px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.pk-pill-success { background: var(--orange); color: #5C3D00; }
+.pk-pill-warning { background: #FFE082; color: #6B4B00; }
+.pk-pill-danger { background: var(--navy); color: #fff; }
 
 /* ---------- Rows / panels ---------- */
 .pk-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  margin-bottom: 18px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 @media (max-width: 950px) { .pk-row { grid-template-columns: 1fr; } }
 
 .pk-panel {
   background: var(--white);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
-  padding: 20px;
+  padding: 0 16px 16px;
+  overflow: hidden;
 }
-.pk-panel-wide { margin-bottom: 18px; }
-.pk-panel h3 { margin: 0 0 16px; font-size: 14.5px; color: var(--navy); font-weight: 700; }
+.pk-panel-wide { margin-bottom: 10px; }
+.pk-panel h3 {
+  margin: 0 -16px 14px;
+  padding: 12px 16px;
+  background: var(--navy);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
 
 .pk-gauge-wrap { position: relative; height: 200px; }
 .pk-gauge-target { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: -6px; margin-bottom: 14px; }
@@ -891,7 +981,7 @@ footer {
 .pk-survey-card { text-align: center; padding: 18px 12px 16px; background: var(--gray-bg); border-radius: var(--radius-sm); }
 .pk-survey-icon {
   width: 46px; height: 46px; border-radius: 50%;
-  background: var(--icon-bg, rgba(18,44,111,.10));
+  background: var(--icon-bg, rgba(228,0,43,.10));
   color: var(--icon-color, var(--navy));
   display: flex; align-items: center; justify-content: center;
   margin: 0 auto 10px; font-size: 18px;
@@ -917,7 +1007,7 @@ footer {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: rgba(18,44,111,0.08);
+  background: rgba(228,0,43,0.08);
   color: var(--navy);
   display: flex;
   align-items: center;
@@ -997,8 +1087,8 @@ footer {
 
 .pk-footnote {
   display: flex; align-items: flex-start; gap: 10px;
-  background: rgba(18,44,111,0.06);
-  border: 1px solid rgba(18,44,111,0.12);
+  background: rgba(228,0,43,0.06);
+  border: 1px solid rgba(228,0,43,0.12);
   border-radius: var(--radius-sm);
   padding: 14px 16px;
   font-size: 12.5px;
