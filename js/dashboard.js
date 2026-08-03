@@ -306,17 +306,17 @@ const Dashboard = {
 
     const fields = [
 
-      { key: 'Piutang', label: 'Pelayanan Piutang BHP', icon: 'fa-file-circle-check', color: '#122C6F', type: 'percent' },
+      { key: 'Piutang', label: 'Pelayanan Piutang BHP', icon: 'fa-file-circle-check', color: '#E4002B' },
 
-      { key: 'SOR', label: 'Penyelenggaraan Layanan SOR', icon: 'fa-id-card', color: '#6695ED', type: 'percent' },
+      { key: 'SOR', label: 'Penyelenggaraan Layanan SOR', icon: 'fa-id-card', color: '#FFC700' },
 
-      { key: 'LKE', label: 'LKE Pembangunan ZI', icon: 'fa-shield-halved', color: '#B82638', type: 'percent' },
+      { key: 'LKE', label: 'LKE Pembangunan ZI', icon: 'fa-shield-halved', color: '#E4002B' },
 
-      { key: 'IKM', label: 'IKM / IPKP', scale: 'SKALA 4', icon: 'fa-face-smile', color: '#F13B1C' },
+      { key: 'IKM', label: 'IKM / IPKP', scale: 'SKALA 4', icon: 'fa-star', color: '#FFC700' },
 
-      { key: 'IPAK', label: 'IIPP / IPAK', scale: 'SKALA 10', icon: 'fa-shield-heart', color: '#40D872' },
+      { key: 'IPAK', label: 'IIPP / IPAK', scale: 'SKALA 10', icon: 'fa-heart', color: '#E4002B' },
 
-      { key: 'PrimaAksi', label: 'PrimaAksi', icon: 'fa-bullseye', color: '#0B1D4A', type: 'percent' }
+      { key: 'PrimaAksi', label: 'PrimaAksi', icon: 'fa-bullseye', color: '#E4002B' }
 
     ];
 
@@ -327,30 +327,6 @@ const Dashboard = {
       const raw = pk[f.key];
 
       const value = Number(raw) || 0;
-
-
-
-      if (f.type === 'star') {
-
-        return `
-
-          <div class="pk-kpi-card">
-
-            <div class="pk-kpi-icon" style="background:${f.color}22; color:${f.color};"><i class="fa-solid ${f.icon}"></i></div>
-
-            <div class="pk-kpi-value">${value}</div>
-
-            <div class="pk-kpi-label">${f.label}</div>
-
-            ${f.scale ? `<div class="pk-kpi-scale">${f.scale}</div>` : ''}
-
-            <div class="pk-kpi-stars">${this.starsHtml(value, f.max)}</div>
-
-          </div>`;
-
-      }
-
-
 
       const pill = this.pillFor(value);
 
@@ -516,7 +492,7 @@ const Dashboard = {
 
       <div class="pk-survey-card">
 
-        <div class="pk-survey-icon" style="--icon-bg:#6695ED1F; --icon-color:#6695ED;"><i class="fa-solid fa-clipboard-check"></i></div>
+        <div class="pk-survey-icon" style="--icon-bg:#FFC7001F; --icon-color:#FFA000;"><i class="fa-solid fa-clipboard-check"></i></div>
 
         <div class="pk-survey-label">IKM / IPKP</div>
 
@@ -528,7 +504,7 @@ const Dashboard = {
 
       <div class="pk-survey-card">
 
-        <div class="pk-survey-icon" style="--icon-bg:#6695ED1F; --icon-color:#6695ED;"><i class="fa-solid fa-arrow-trend-up"></i></div>
+        <div class="pk-survey-icon" style="--icon-bg:#FFC7001F; --icon-color:#FFA000;"><i class="fa-solid fa-arrow-trend-up"></i></div>
 
         <div class="pk-survey-label">IIPP / IPAK</div>
 
@@ -572,14 +548,14 @@ const Dashboard = {
 
     box.innerHTML = `
       <div class="pk-survey-card pk-survey-card--row">
-        <div class="pk-survey-icon" style="--icon-bg:#6695ED1F; --icon-color:#6695ED;"><i class="fa-solid fa-tower-broadcast"></i></div>
+        <div class="pk-survey-icon" style="--icon-bg:#FFC7001F; --icon-color:#FFA000;"><i class="fa-solid fa-tower-broadcast"></i></div>
         <div>
           <div class="pk-survey-value">${broadcast}</div>
           <div class="pk-survey-label">Tamu Broadcast</div>
         </div>
       </div>
       <div class="pk-survey-card pk-survey-card--row">
-        <div class="pk-survey-icon" style="--icon-bg:#6695ED1F; --icon-color:#6695ED;"><i class="fa-solid fa-user-group"></i></div>
+        <div class="pk-survey-icon" style="--icon-bg:#FFC7001F; --icon-color:#FFA000;"><i class="fa-solid fa-user-group"></i></div>
         <div>
           <div class="pk-survey-value">${nonBroadcast}</div>
           <div class="pk-survey-label">Tamu Non Broadcast</div>
@@ -612,12 +588,12 @@ const Dashboard = {
       const terbit = Number(isr.Terbit) || 0;
       const cabut = Number(isr.Cabut) || 0;
       isrBox.innerHTML = `
-        <div class="pk-pelayanan-card" style="--card-color:#3B82F6">
+        <div class="pk-pelayanan-card" style="--card-color:#E4002B">
           <div class="pk-pelayanan-icon"><i class="fa-solid fa-file-circle-check"></i></div>
           <div class="pk-pelayanan-value">${terbit}</div>
           <div class="pk-pelayanan-label">Jumlah Terbit ISR</div>
         </div>
-        <div class="pk-pelayanan-card" style="--card-color:#22C55E">
+        <div class="pk-pelayanan-card" style="--card-color:#FFC700">
           <div class="pk-pelayanan-icon"><i class="fa-solid fa-file-circle-xmark"></i></div>
           <div class="pk-pelayanan-value">${cabut}</div>
           <div class="pk-pelayanan-label">Jumlah ISR Tercabut</div>
@@ -633,22 +609,22 @@ const Dashboard = {
       const baru = Number(spp.SPPNew) || 0;
       const renewal = Number(spp.SPPRenewal) || 0;
       sppBox.innerHTML = `
-        <div class="pk-pelayanan-card" style="--card-color:#7C3AED">
+        <div class="pk-pelayanan-card" style="--card-color:#FF6D00">
           <div class="pk-pelayanan-icon"><i class="fa-solid fa-calendar-check"></i></div>
           <div class="pk-pelayanan-value">${annual}</div>
           <div class="pk-pelayanan-label">SPP Annual</div>
         </div>
-        <div class="pk-pelayanan-card" style="--card-color:#F97316">
+        <div class="pk-pelayanan-card" style="--card-color:#FFD100">
           <div class="pk-pelayanan-icon"><i class="fa-solid fa-bell"></i></div>
           <div class="pk-pelayanan-value">${reminder}</div>
           <div class="pk-pelayanan-label">SPP Reminder</div>
         </div>
-        <div class="pk-pelayanan-card" style="--card-color:#3B82F6">
+        <div class="pk-pelayanan-card" style="--card-color:#B30000">
           <div class="pk-pelayanan-icon"><i class="fa-solid fa-file-circle-plus"></i></div>
           <div class="pk-pelayanan-value">${baru}</div>
           <div class="pk-pelayanan-label">SPP New</div>
         </div>
-        <div class="pk-pelayanan-card" style="--card-color:#14B8A6">
+        <div class="pk-pelayanan-card" style="--card-color:#FF3D00">
           <div class="pk-pelayanan-icon"><i class="fa-solid fa-rotate"></i></div>
           <div class="pk-pelayanan-value">${renewal}</div>
           <div class="pk-pelayanan-label">SPP Renewal</div>
@@ -688,7 +664,7 @@ const Dashboard = {
 
     }
 
-    const palette = ['#3B82F6', '#22C55E', '#F97316', '#7C3AED', '#14B8A6', '#EC4899', '#3B82F6', '#F97316'];
+    const palette = ['#E4002B', '#FFC700', '#FF6D00', '#FFD100', '#B30000', '#FF3D00', '#E4002B', '#FFC700'];
 
     box.innerHTML = rows.map((r, i) => {
 
