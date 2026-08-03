@@ -286,6 +286,22 @@ const Dashboard = {
 
 
 
+  /* Warna badge progress bertingkat: merah 0-50%, oranye >50-80%, hijau >80-100%, biru >100% */
+
+  tierColor(pct) {
+
+    if (pct > 100) return '#2F80ED';
+
+    if (pct > 80) return '#27AE60';
+
+    if (pct > 50) return '#F5A623';
+
+    return '#E4335F';
+
+  },
+
+
+
   /* ---------------- KPI CARDS ---------------- */
 
   renderKpi(pk) {
@@ -306,17 +322,17 @@ const Dashboard = {
 
     const fields = [
 
-      { key: 'Piutang', label: 'Pelayanan Piutang BHP', icon: 'fa-file-circle-check', color: '#E4002B' },
+      { key: 'Piutang', label: 'Pelayanan Piutang BHP', icon: 'fa-file-circle-check', color: '#E4335F' },
 
-      { key: 'SOR', label: 'Penyelenggaraan Layanan SOR', icon: 'fa-id-card', color: '#FFC700' },
+      { key: 'SOR', label: 'Penyelenggaraan Layanan SOR', icon: 'fa-id-card', color: '#F5A623' },
 
-      { key: 'LKE', label: 'LKE Pembangunan ZI', icon: 'fa-shield-halved', color: '#E4002B' },
+      { key: 'LKE', label: 'LKE Pembangunan ZI', icon: 'fa-shield-halved', color: '#2F80ED' },
 
-      { key: 'IKM', label: 'IKM / IPKP', scale: 'SKALA 4', icon: 'fa-star', color: '#FFC700' },
+      { key: 'IKM', label: 'IKM / IPKP', scale: 'SKALA 4', icon: 'fa-star', color: '#27AE60' },
 
-      { key: 'IPAK', label: 'IIPP / IPAK', scale: 'SKALA 10', icon: 'fa-heart', color: '#E4002B' },
+      { key: 'IPAK', label: 'IIPP / IPAK', scale: 'SKALA 10', icon: 'fa-heart', color: '#8E5CF7' },
 
-      { key: 'PrimaAksi', label: 'PrimaAksi', icon: 'fa-bullseye', color: '#E4002B' }
+      { key: 'PrimaAksi', label: 'PrimaAksi', icon: 'fa-bullseye', color: '#17B8C4' }
 
     ];
 
@@ -334,15 +350,21 @@ const Dashboard = {
 
         <div class="pk-kpi-card">
 
-          <div class="pk-kpi-icon" style="background:${f.color}22; color:${f.color};"><i class="fa-solid ${f.icon}"></i></div>
+          <div class="pk-kpi-dots" style="color:${f.color};"></div>
 
-          <div class="pk-kpi-value">${value}%</div>
+          <div class="pk-kpi-body">
 
-          <div class="pk-kpi-label">${f.label}</div>
+            <div class="pk-kpi-icon" style="background:${f.color}; color:#fff; box-shadow:0 8px 18px -6px ${f.color};"><i class="fa-solid ${f.icon}"></i></div>
 
-          ${f.scale ? `<div class="pk-kpi-scale">${f.scale}</div>` : ''}
+            <div class="pk-kpi-value" style="color:${f.color};">${value}%</div>
 
-          <span class="pk-pill ${pill.cls}">${pill.text}</span>
+            <div class="pk-kpi-label">${f.label}</div>
+
+            ${f.scale ? `<div class="pk-kpi-scale" style="color:${f.color}; border-color:${f.color};">${f.scale}</div>` : ''}
+
+            <span class="pk-pill ${pill.cls}">${pill.text}</span>
+
+          </div>
 
         </div>`;
 
@@ -470,11 +492,15 @@ const Dashboard = {
 
     const respondenBox = document.getElementById('surveyResponden');
 
+    const ketBox = document.getElementById('surveyKeterangan');
+
     if (!survei) {
 
       box.innerHTML = `<div class="state-box">Belum ada data survei.</div>`;
 
       respondenBox.innerHTML = '';
+
+      if (ketBox) ketBox.innerHTML = '';
 
       return;
 
@@ -486,29 +512,43 @@ const Dashboard = {
 
     const responden = Number(survei.Responden) || 0;
 
+    const keterangan = survei.Keterangan || '';
+
+
+
+    if (ketBox) {
+
+      ketBox.innerHTML = keterangan
+
+        ? `<span class="pk-survey-keterangan-pill"><i class="fa-regular fa-calendar"></i> ${Utils.escape(keterangan)}</span>`
+
+        : '';
+
+    }
+
 
 
     box.innerHTML = `
 
-      <div class="pk-survey-card">
+      <div class="pk-survey-card" style="--card-color:#E4335F; background:linear-gradient(160deg,#E4335F22,#E4335F08);">
 
-        <div class="pk-survey-icon" style="--icon-bg:#FFC7001F; --icon-color:#FFA000;"><i class="fa-solid fa-clipboard-check"></i></div>
+        <div class="pk-survey-icon" style="background:#E4335F; color:#fff;"><i class="fa-solid fa-clipboard-check"></i></div>
 
         <div class="pk-survey-label">IKM / IPKP</div>
 
-        <div class="pk-survey-value">${ikm}</div>
+        <div class="pk-survey-value" style="color:#E4335F;">${ikm}</div>
 
         <div class="pk-survey-stars">${this.starsHtml(ikm, 4)}</div>
 
       </div>
 
-      <div class="pk-survey-card">
+      <div class="pk-survey-card" style="--card-color:#2F80ED; background:linear-gradient(160deg,#2F80ED22,#2F80ED08);">
 
-        <div class="pk-survey-icon" style="--icon-bg:#FFC7001F; --icon-color:#FFA000;"><i class="fa-solid fa-arrow-trend-up"></i></div>
+        <div class="pk-survey-icon" style="background:#2F80ED; color:#fff;"><i class="fa-solid fa-arrow-trend-up"></i></div>
 
         <div class="pk-survey-label">IIPP / IPAK</div>
 
-        <div class="pk-survey-value">${ipak}</div>
+        <div class="pk-survey-value" style="color:#E4335F;">${ipak}</div>
 
         <div class="pk-survey-stars">${this.starsHtml(ipak, 10)}</div>
 
@@ -547,33 +587,33 @@ const Dashboard = {
     const offline = Number(tamu.PelayananOffline) || 0;
 
     box.innerHTML = `
-      <div class="pk-survey-card pk-survey-card--row">
-        <div class="pk-survey-icon" style="--icon-bg:#FFC7001F; --icon-color:#FFA000;"><i class="fa-solid fa-tower-broadcast"></i></div>
+      <div class="pk-survey-card pk-survey-card--row" style="--card-color:#F5722F; background:linear-gradient(160deg,#F5722F22,#F5722F08);">
+        <div class="pk-survey-icon" style="background:#F5722F; color:#fff;"><i class="fa-solid fa-tower-broadcast"></i></div>
         <div>
-          <div class="pk-survey-value">${broadcast}</div>
+          <div class="pk-survey-value" style="color:#F5722F;">${broadcast}</div>
           <div class="pk-survey-label">Tamu Broadcast</div>
         </div>
       </div>
-      <div class="pk-survey-card pk-survey-card--row">
-        <div class="pk-survey-icon" style="--icon-bg:#FFC7001F; --icon-color:#FFA000;"><i class="fa-solid fa-user-group"></i></div>
+      <div class="pk-survey-card pk-survey-card--row" style="--card-color:#F5A623; background:linear-gradient(160deg,#F5A62322,#F5A62308);">
+        <div class="pk-survey-icon" style="background:#F5A623; color:#fff;"><i class="fa-solid fa-user-group"></i></div>
         <div>
-          <div class="pk-survey-value">${nonBroadcast}</div>
+          <div class="pk-survey-value" style="color:#F5A623;">${nonBroadcast}</div>
           <div class="pk-survey-label">Tamu Non Broadcast</div>
         </div>
       </div>`;
 
     ooBox.innerHTML = `
-      <div class="pk-survey-card pk-survey-card--row">
-        <div class="pk-survey-icon" style="--icon-bg:#40D8721F; --icon-color:#1B9E56;"><i class="fa-solid fa-globe"></i></div>
+      <div class="pk-survey-card pk-survey-card--row" style="--card-color:#27AE60; background:linear-gradient(160deg,#27AE6022,#27AE6008);">
+        <div class="pk-survey-icon" style="background:#27AE60; color:#fff;"><i class="fa-solid fa-globe"></i></div>
         <div>
-          <div class="pk-survey-value">${online}</div>
+          <div class="pk-survey-value" style="color:#27AE60;">${online}</div>
           <div class="pk-survey-label">Pelayanan Online</div>
         </div>
       </div>
-      <div class="pk-survey-card pk-survey-card--row">
-        <div class="pk-survey-icon" style="--icon-bg:#40D8721F; --icon-color:#1B9E56;"><i class="fa-solid fa-shop"></i></div>
+      <div class="pk-survey-card pk-survey-card--row" style="--card-color:#17B8C4; background:linear-gradient(160deg,#17B8C422,#17B8C408);">
+        <div class="pk-survey-icon" style="background:#17B8C4; color:#fff;"><i class="fa-solid fa-shop"></i></div>
         <div>
-          <div class="pk-survey-value">${offline}</div>
+          <div class="pk-survey-value" style="color:#17B8C4;">${offline}</div>
           <div class="pk-survey-label">Pelayanan Offline</div>
         </div>
       </div>`;
@@ -588,15 +628,21 @@ const Dashboard = {
       const terbit = Number(isr.Terbit) || 0;
       const cabut = Number(isr.Cabut) || 0;
       isrBox.innerHTML = `
-        <div class="pk-pelayanan-card" style="--card-color:#E4002B">
-          <div class="pk-pelayanan-icon"><i class="fa-solid fa-file-circle-check"></i></div>
-          <div class="pk-pelayanan-value">${terbit}</div>
+        <div class="pk-pelayanan-card">
+          <div class="pk-pelayanan-wash" style="--card-color:#E4335F"></div>
+          <div class="pk-pelayanan-dots" style="color:#E4335F"></div>
+          <div class="pk-pelayanan-icon" style="--card-color:#E4335F"><i class="fa-solid fa-file-circle-check"></i></div>
+          <div class="pk-pelayanan-value" style="color:#E4335F">${terbit}</div>
           <div class="pk-pelayanan-label">Jumlah Terbit ISR</div>
+          <div class="pk-pelayanan-underline" style="background:#E4335F"></div>
         </div>
-        <div class="pk-pelayanan-card" style="--card-color:#FFC700">
-          <div class="pk-pelayanan-icon"><i class="fa-solid fa-file-circle-xmark"></i></div>
-          <div class="pk-pelayanan-value">${cabut}</div>
+        <div class="pk-pelayanan-card">
+          <div class="pk-pelayanan-wash" style="--card-color:#F5A623"></div>
+          <div class="pk-pelayanan-dots" style="color:#F5A623"></div>
+          <div class="pk-pelayanan-icon" style="--card-color:#F5A623"><i class="fa-solid fa-file-circle-xmark"></i></div>
+          <div class="pk-pelayanan-value" style="color:#F5A623">${cabut}</div>
           <div class="pk-pelayanan-label">Jumlah ISR Tercabut</div>
+          <div class="pk-pelayanan-underline" style="background:#F5A623"></div>
         </div>`;
     }
 
@@ -608,27 +654,21 @@ const Dashboard = {
       const reminder = Number(spp.SPPReminder) || 0;
       const baru = Number(spp.SPPNew) || 0;
       const renewal = Number(spp.SPPRenewal) || 0;
-      sppBox.innerHTML = `
-        <div class="pk-pelayanan-card" style="--card-color:#FF6D00">
-          <div class="pk-pelayanan-icon"><i class="fa-solid fa-calendar-check"></i></div>
-          <div class="pk-pelayanan-value">${annual}</div>
-          <div class="pk-pelayanan-label">SPP Annual</div>
-        </div>
-        <div class="pk-pelayanan-card" style="--card-color:#FFD100">
-          <div class="pk-pelayanan-icon"><i class="fa-solid fa-bell"></i></div>
-          <div class="pk-pelayanan-value">${reminder}</div>
-          <div class="pk-pelayanan-label">SPP Reminder</div>
-        </div>
-        <div class="pk-pelayanan-card" style="--card-color:#B30000">
-          <div class="pk-pelayanan-icon"><i class="fa-solid fa-file-circle-plus"></i></div>
-          <div class="pk-pelayanan-value">${baru}</div>
-          <div class="pk-pelayanan-label">SPP New</div>
-        </div>
-        <div class="pk-pelayanan-card" style="--card-color:#FF3D00">
-          <div class="pk-pelayanan-icon"><i class="fa-solid fa-rotate"></i></div>
-          <div class="pk-pelayanan-value">${renewal}</div>
-          <div class="pk-pelayanan-label">SPP Renewal</div>
-        </div>`;
+      const sppDef = [
+        { color: '#2F80ED', icon: 'fa-calendar-check', value: annual, label: 'SPP Annual' },
+        { color: '#F5A623', icon: 'fa-bell', value: reminder, label: 'SPP Reminder' },
+        { color: '#E4335F', icon: 'fa-file-circle-plus', value: baru, label: 'SPP New' },
+        { color: '#F5722F', icon: 'fa-rotate', value: renewal, label: 'SPP Renewal' }
+      ];
+      sppBox.innerHTML = sppDef.map(d => `
+        <div class="pk-pelayanan-card">
+          <div class="pk-pelayanan-wash" style="--card-color:${d.color}"></div>
+          <div class="pk-pelayanan-dots" style="color:${d.color}"></div>
+          <div class="pk-pelayanan-icon" style="--card-color:${d.color}"><i class="fa-solid ${d.icon}"></i></div>
+          <div class="pk-pelayanan-value" style="color:${d.color}">${d.value}</div>
+          <div class="pk-pelayanan-label">${d.label}</div>
+          <div class="pk-pelayanan-underline" style="background:${d.color}"></div>
+        </div>`).join('');
     }
   },
 
@@ -676,13 +716,19 @@ const Dashboard = {
 
       const color = palette[i % palette.length];
 
+      const tier = this.tierColor(pct);
+
       return `
 
-        <div class="pk-pelayanan-card" style="--card-color:${color}">
+        <div class="pk-pelayanan-card">
 
-          <div class="pk-pelayanan-icon"><i class="fa-solid ${this.pelayananIcon(r.jenis)}"></i></div>
+          <div class="pk-pelayanan-wash" style="--card-color:${color}"></div>
 
-          <div class="pk-pelayanan-value">${capaian}</div>
+          <div class="pk-pelayanan-dots" style="color:${color}"></div>
+
+          <div class="pk-pelayanan-icon" style="--card-color:${color}"><i class="fa-solid ${this.pelayananIcon(r.jenis)}"></i></div>
+
+          <div class="pk-pelayanan-value" style="color:${color}">${capaian}</div>
 
           <div class="pk-pelayanan-label">${Utils.escape(r.jenis)}</div>
 
@@ -690,11 +736,13 @@ const Dashboard = {
 
           <div class="pk-pelayanan-progress">
 
-            <div class="pk-pelayanan-progress-track"><div class="pk-pelayanan-progress-fill" style="width:${Math.min(100, pct)}%"></div></div>
+            <div class="pk-pelayanan-progress-track"><div class="pk-pelayanan-progress-fill" style="width:${Math.min(100, pct)}%; background:${color};"></div></div>
 
-            <span class="pk-pelayanan-progress-pct" style="background:${color}22; color:${color};">${pct}%</span>
+            <span class="pk-pelayanan-progress-pct" style="background:${tier}; color:#fff;">${pct}%</span>
 
           </div>
+
+          <div class="pk-pelayanan-underline" style="background:${color}"></div>
 
         </div>`;
 
