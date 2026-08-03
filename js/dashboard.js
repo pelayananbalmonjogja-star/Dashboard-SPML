@@ -296,7 +296,7 @@ const Dashboard = {
 
     if (pct > 50) return '#F5A623';
 
-    return '#E4335F';
+    return '#FF0000';
 
   },
 
@@ -322,7 +322,7 @@ const Dashboard = {
 
     const fields = [
 
-      { key: 'Piutang', label: 'Pelayanan Piutang BHP', icon: 'fa-file-circle-check', color: '#E4335F' },
+      { key: 'Piutang', label: 'Pelayanan Piutang BHP', icon: 'fa-file-circle-check', color: '#FF0000' },
 
       { key: 'SOR', label: 'Penyelenggaraan Layanan SOR', icon: 'fa-id-card', color: '#F5A623' },
 
@@ -530,13 +530,13 @@ const Dashboard = {
 
     box.innerHTML = `
 
-      <div class="pk-survey-card" style="--card-color:#E4335F; background:linear-gradient(160deg,#E4335F22,#E4335F08);">
+      <div class="pk-survey-card" style="--card-color:#FF0000; background:linear-gradient(160deg,#FF000022,#FF000008);">
 
-        <div class="pk-survey-icon" style="background:#E4335F; color:#fff;"><i class="fa-solid fa-clipboard-check"></i></div>
+        <div class="pk-survey-icon" style="background:#FF0000; color:#fff;"><i class="fa-solid fa-clipboard-check"></i></div>
 
         <div class="pk-survey-label">IKM / IPKP</div>
 
-        <div class="pk-survey-value" style="color:#E4335F;">${ikm}</div>
+        <div class="pk-survey-value" style="color:#FF0000;">${ikm}</div>
 
         <div class="pk-survey-stars">${this.starsHtml(ikm, 4)}</div>
 
@@ -548,7 +548,7 @@ const Dashboard = {
 
         <div class="pk-survey-label">IIPP / IPAK</div>
 
-        <div class="pk-survey-value" style="color:#E4335F;">${ipak}</div>
+        <div class="pk-survey-value" style="color:#FF0000;">${ipak}</div>
 
         <div class="pk-survey-stars">${this.starsHtml(ipak, 10)}</div>
 
@@ -629,12 +629,12 @@ const Dashboard = {
       const cabut = Number(isr.Cabut) || 0;
       isrBox.innerHTML = `
         <div class="pk-pelayanan-card">
-          <div class="pk-pelayanan-wash" style="--card-color:#E4335F"></div>
-          <div class="pk-pelayanan-dots" style="color:#E4335F"></div>
-          <div class="pk-pelayanan-icon" style="--card-color:#E4335F"><i class="fa-solid fa-file-circle-check"></i></div>
-          <div class="pk-pelayanan-value" style="color:#E4335F">${terbit}</div>
+          <div class="pk-pelayanan-wash" style="--card-color:#FF0000"></div>
+          <div class="pk-pelayanan-dots" style="color:#FF0000"></div>
+          <div class="pk-pelayanan-icon" style="--card-color:#FF0000"><i class="fa-solid fa-file-circle-check"></i></div>
+          <div class="pk-pelayanan-value" style="color:#FF0000">${terbit}</div>
           <div class="pk-pelayanan-label">Jumlah Terbit ISR</div>
-          <div class="pk-pelayanan-underline" style="background:#E4335F"></div>
+          <div class="pk-pelayanan-underline" style="background:#FF0000"></div>
         </div>
         <div class="pk-pelayanan-card">
           <div class="pk-pelayanan-wash" style="--card-color:#F5A623"></div>
@@ -657,7 +657,7 @@ const Dashboard = {
       const sppDef = [
         { color: '#2F80ED', icon: 'fa-calendar-check', value: annual, label: 'SPP Annual' },
         { color: '#F5A623', icon: 'fa-bell', value: reminder, label: 'SPP Reminder' },
-        { color: '#E4335F', icon: 'fa-file-circle-plus', value: baru, label: 'SPP New' },
+        { color: '#FF0000', icon: 'fa-file-circle-plus', value: baru, label: 'SPP New' },
         { color: '#F5722F', icon: 'fa-rotate', value: renewal, label: 'SPP Renewal' }
       ];
       sppBox.innerHTML = sppDef.map(d => `
@@ -704,7 +704,7 @@ const Dashboard = {
 
     }
 
-    const palette = ['#E4002B', '#FFC700', '#FF6D00', '#FFD100', '#B30000', '#FF3D00', '#E4002B', '#FFC700'];
+    const palette = ['#FF0000', '#FFF000', '#FF6D00', '#FFF000', '#FF0000', '#FF3D00', '#FF0000', '#FFF000'];
 
     box.innerHTML = rows.map((r, i) => {
 
@@ -772,9 +772,67 @@ const Dashboard = {
 
     const headerLabels = { tanggalMulai: 'Tanggal Mulai', tanggalSelesai: 'Tanggal Selesai', judul: 'Judul', keterangan: 'Keterangan' };
 
-    const thead = columns.map(c => `<th>${headerLabels[c]}</th>`).join('');
+    const headerIcons = { tanggalMulai: 'fa-calendar-days', tanggalSelesai: 'fa-calendar-check', judul: 'fa-bullhorn', keterangan: 'fa-comment-dots' };
 
-    const tbody = rows.map(r => `<tr>${columns.map(c => `<td>${Utils.escape(r[c])}</td>`).join('')}</tr>`).join('');
+    const thead = columns.map(c => `<th><i class="fa-solid ${headerIcons[c]} pk-th-icon"></i>${headerLabels[c].toUpperCase()}</th>`).join('');
+
+
+
+    // Palet warna & ikon per jenis kegiatan (dicocokkan dari kata kunci judul, dengan fallback bergilir)
+
+    const palette = ['#FF0000', '#F5A623', '#27AE60', '#8E5CF7', '#2F80ED'];
+
+    const themeRules = [
+
+      { test: /unar/i, icon: 'fa-bullhorn', color: '#FF0000' },
+
+      { test: /mots/i, icon: 'fa-tower-broadcast', color: '#F5A623' },
+
+      { test: /inspeksi\s*rutin/i, icon: 'fa-shield-halved', color: '#27AE60' },
+
+      { test: /inspeksi\s*insidentil/i, icon: 'fa-magnifying-glass', color: '#8E5CF7' },
+
+      { test: /klarifikasi/i, icon: 'fa-file-circle-check', color: '#2F80ED' }
+
+    ];
+
+    const getTheme = (judul, idx) => {
+
+      const found = themeRules.find(t => t.test.test(judul || ''));
+
+      if (found) return found;
+
+      return { icon: 'fa-calendar-check', color: palette[idx % palette.length] };
+
+    };
+
+
+
+    const dateCell = (val, theme) => `<span class="pk-keg-date"><span class="pk-keg-date-icon" style="background:${theme.color};"><i class="fa-solid fa-calendar-days"></i></span>${Utils.escape(val)}</span>`;
+
+
+
+    const tbody = rows.map((r, idx) => {
+
+      const theme = getTheme(r.judul, idx);
+
+      const judulCell = `<span class="pk-keg-judul"><i class="fa-solid ${theme.icon}" style="color:${theme.color};"></i>${Utils.escape(r.judul)}</span>`;
+
+      const ketCell = `<span class="pk-keg-ket"><i class="fa-solid fa-file-lines" style="color:${theme.color};"></i>${Utils.escape(r.keterangan)}</span>`;
+
+      return `<tr style="--row-tint:${theme.color}1a;">` +
+
+        `<td>${dateCell(r.tanggalMulai, theme)}</td>` +
+
+        `<td>${dateCell(r.tanggalSelesai, theme)}</td>` +
+
+        `<td>${judulCell}</td>` +
+
+        `<td>${ketCell}</td>` +
+
+      `</tr>`;
+
+    }).join('');
 
 
 
@@ -784,19 +842,33 @@ const Dashboard = {
 
     this.state.dataTable = $('#kegiatanTable').DataTable({
 
-      pageLength: 8,
+      pageLength: 5,
+
+      lengthMenu: [5, 10, 25, 50],
+
+      dom: '<"pk-kegiatan-toolbar"lf>t<"pk-kegiatan-footer"ip>',
 
       language: {
 
-        search: 'Cari:', lengthMenu: 'Tampilkan _MENU_ baris',
+        search: 'Cari :', searchPlaceholder: 'Cari kegiatan...', lengthMenu: 'Tampilkan _MENU_ baris',
 
         info: 'Menampilkan _START_-_END_ dari _TOTAL_ data',
 
-        paginate: { previous: 'Sebelumnya', next: 'Berikutnya' }, zeroRecords: 'Data tidak ditemukan'
+        paginate: { previous: '‹ Sebelumnya', next: 'Berikutnya ›' }, zeroRecords: 'Data tidak ditemukan'
 
       }
 
     });
+
+
+
+    // Bungkus input pencarian dengan ikon kaca pembesar
+
+    const $filterInput = $(wrap).find('.dataTables_filter input');
+
+    $filterInput.wrap('<span class="pk-search-wrap"></span>');
+
+    $filterInput.before('<i class="fa-solid fa-magnifying-glass pk-search-icon"></i>');
 
   },
 
@@ -826,7 +898,7 @@ const Dashboard = {
 
       <tr>
 
-        <td class="pk-notes-week">${Utils.escape(r.minggu || '-')}</td>
+        <td class="pk-notes-week"><i class="fa-regular fa-calendar"></i>${Utils.escape(r.minggu || '-')}</td>
 
         <td class="pk-notes-isi">${Utils.escape(r.isi || '').replace(/\n/g, '<br>')}</td>
 
