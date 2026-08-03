@@ -10,10 +10,10 @@ const Charts = {
   gauges: {}, // registry of mini/multi gauge instances, keyed by canvasId
 
   colors: {
-    navy: '#E4002B',
+    navy: '#FF0000',
     green: '#16A34A',
     orange: '#F59E0B',
-    red: '#DC2626',
+    red: '#FF0000',
     gray: '#E5E7EB'
   },
 
@@ -26,7 +26,7 @@ const Charts = {
     const color = pct >= 90 ? this.colors.green : pct >= 75 ? this.colors.orange : this.colors.red;
     const centerLabel = label || 'Operasional';
     const fontSize = opts.fontSize || 26;
-    const track = opts.track || '#F3E7C0';
+    const track = opts.track || '#FFF000';
 
     if (this.gauges[canvasId]) this.gauges[canvasId].destroy();
     // keep legacy alias for the original single "Operasional" gauge
@@ -59,7 +59,7 @@ const Charts = {
           const y = chartArea.bottom - (fontSize < 20 ? 2 : 6);
           ctx.save();
           ctx.textAlign = 'center';
-          ctx.fillStyle = '#E4002B';
+          ctx.fillStyle = '#FF0000';
           ctx.font = `700 ${fontSize}px Plus Jakarta Sans, sans-serif`;
           ctx.fillText(pct.toFixed(2) + '%', x, y);
           if (centerLabel) {
@@ -115,7 +115,7 @@ const Charts = {
       data: {
         labels,
         datasets: [
-          { label: 'Target', data: targetData, backgroundColor: '#FFE8A3', borderRadius: 6, maxBarThickness: 26 },
+          { label: 'Target', data: targetData, backgroundColor: '#FFF000', borderRadius: 6, maxBarThickness: 26 },
           { label: 'Capaian', data: capaianData, backgroundColor: this.colors.navy, borderRadius: 6, maxBarThickness: 26 }
         ]
       },
