@@ -210,9 +210,11 @@
 
       <div class="pk-row">
 
-        <section id="section-survey" class="pk-panel">
+        <section id="section-survey" class="pk-panel pk-panel--red">
 
-          <h3>Pelaksanaan Survey Integritas Pelayanan Publik</h3>
+          <h3><i class="fa-solid fa-clipboard-check"></i> Pelaksanaan Survey Integritas Pelayanan Publik</h3>
+
+          <div class="pk-survey-keterangan" id="surveyKeterangan"></div>
 
           <div class="pk-survey-grid" id="surveyGrid"></div>
 
@@ -222,13 +224,13 @@
 
 
 
-        <section id="section-tamu" class="pk-panel">
+        <section id="section-tamu" class="pk-panel pk-panel--red">
 
-          <h3>Jumlah Tamu Pelayanan</h3>
+          <h3><i class="fa-solid fa-user-group"></i> Jumlah Tamu Pelayanan</h3>
 
           <div class="pk-survey-grid" id="tamuGrid"></div>
 
-          <div class="pk-subheading" style="margin-top:16px;">Pelayanan Online &amp; Offline</div>
+          <div class="pk-subheading-divider"><i class="fa-solid fa-globe"></i> PELAYANAN ONLINE &amp; OFFLINE</div>
 
           <div class="pk-survey-grid" id="pelayananOOGrid"></div>
 
@@ -242,9 +244,9 @@
 
       <div class="pk-row">
 
-        <section id="section-isr" class="pk-panel">
+        <section id="section-isr" class="pk-panel pk-panel--red">
 
-          <h3>Penerbitan dan Pencabutan ISR</h3>
+          <h3><i class="fa-solid fa-file-shield"></i> Penerbitan dan Pencabutan ISR</h3>
 
           <div class="pk-pelayanan-grid" id="isrCards"></div>
 
@@ -252,9 +254,9 @@
 
 
 
-        <section id="section-spp" class="pk-panel">
+        <section id="section-spp" class="pk-panel pk-panel--blue">
 
-          <h3>Penerbitan SPP BHP</h3>
+          <h3><i class="fa-solid fa-file-invoice-dollar"></i> Penerbitan SPP BHP</h3>
 
           <div class="pk-pelayanan-grid" id="sppCards"></div>
 
@@ -266,11 +268,25 @@
 
       <!-- ============ REALISASI KEGIATAN SPML ============ -->
 
-      <section id="section-pelayanan" class="pk-panel pk-panel-wide">
+      <section id="section-pelayanan" class="pk-panel pk-panel-wide pk-panel--purple">
 
-        <h3>Realisasi Kegiatan SPML</h3>
+        <h3><i class="fa-solid fa-chart-column"></i> Realisasi Kegiatan SPML</h3>
 
         <div class="pk-pelayanan-grid" id="pelayananCards"></div>
+
+        <div class="pk-progress-legend">
+
+          <span class="pk-progress-legend-title">Keterangan Progress :</span>
+
+          <span class="pk-progress-legend-item"><i class="pk-legend-swatch" style="background:#E4335F;"></i>0 - 50%</span>
+
+          <span class="pk-progress-legend-item"><i class="pk-legend-swatch" style="background:#F5A623;"></i>&gt; 50 - 80%</span>
+
+          <span class="pk-progress-legend-item"><i class="pk-legend-swatch" style="background:#27AE60;"></i>&gt; 80 - 100%</span>
+
+          <span class="pk-progress-legend-item"><i class="pk-legend-swatch" style="background:#2F80ED;"></i>&gt; 100%</span>
+
+        </div>
 
       </section>
 
