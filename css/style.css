@@ -1,33 +1,27 @@
 /* =========================================================
    PK DASHBOARD - STYLESHEET
-   Palet: Biru (#1D4ED8) - Kuning (#F5B400) - Putih (#FFFFFF)
-          Hijau (#16A34A) & Merah (#FF0000) tetap dipakai khusus
+   Palet: Biru Navy (#0B2A5B) - Kuning Emas (#F5B400) - Putih (#FFFFFF)
+          Hijau (#40D872) & Merah (#C0392B) tetap dipakai khusus
           untuk status baik/buruk (semantik), bukan warna brand.
    ========================================================= */
 
-/* =========================================================
-   PK DASHBOARD - STYLESHEET
-   Palet Custom: Merah Cetar (#FF0000) - Hijau (#40D872)
-                 Kuning Cetar (#FFF000) - Merah Gelap (#FF0000)
-   ========================================================= */
-
 :root {
-  --navy: #FF0000;
-  --navy-light: #FFF000;
-  --navy-dark: #FF0000;
+  --navy: #0B2A5B;
+  --navy-light: #F5B400;
+  --navy-dark: #061B3D;
   --green: #40D872;
-  --orange: #FFF000;
-  --red: #FF0000;
-  --gray-bg: #FFF000;
+  --orange: #F5B400;
+  --red: #C0392B;
+  --gray-bg: #FFF8E1;
   --page-bg-start: #FFFFFF;
-  --page-bg-end: #FFF000;
+  --page-bg-end: #FFF8E1;
   --white: #FFFFFF;
-  --text-main: #241010;
-  --text-muted: #7A5A20;
-  --border: #FFF000;
-  --shadow-sm: 0 1px 2px rgba(255, 0, 0, 0.10);
-  --shadow-md: 0 4px 16px rgba(255, 0, 0, 0.16);
-  --shadow-lg: 0 12px 32px rgba(255, 0, 0, 0.24);
+  --text-main: #16233F;
+  --text-muted: #6B7280;
+  --border: #E6C875;
+  --shadow-sm: 0 1px 2px rgba(11, 42, 91, 0.10);
+  --shadow-md: 0 4px 16px rgba(11, 42, 91, 0.16);
+  --shadow-lg: 0 12px 32px rgba(11, 42, 91, 0.24);
   --radius: 16px;
   --radius-sm: 12px;
 }
@@ -757,7 +751,7 @@ footer {
   width: 170px; height: 170px;
   z-index: 0;
   pointer-events: none;
-  background: repeating-linear-gradient(45deg, #FF0000 0 10px, #FFF000 10px 20px);
+  background: repeating-linear-gradient(45deg, #0B2A5B 0 10px, #F5B400 10px 20px);
   opacity: 0.9;
 }
 .pk-body::before {
@@ -969,7 +963,7 @@ footer {
   border-radius: 999px; font-size: 11px; font-weight: 800;
 }
 .pk-pill-success { background: #27AE60; color: #fff; box-shadow: 0 3px 8px rgba(39,174,96,.35); }
-.pk-pill-warning { background: #FFF000; color: #6B4B00; }
+.pk-pill-warning { background: #F5B400; color: #6B4B00; }
 .pk-pill-danger { background: var(--navy); color: #fff; box-shadow: 0 3px 8px rgba(255, 0, 0,.3); }
 
 /* ---------- Rows / panels ---------- */
@@ -1016,7 +1010,7 @@ footer {
   mask-image: linear-gradient(225deg, #000 30%, transparent 70%);
   pointer-events: none;
 }
-.pk-panel--red h3 { background: linear-gradient(90deg, #FF0000, #FF0000); }
+.pk-panel--red h3 { background: linear-gradient(90deg, #0B2A5B, #061B3D); }
 .pk-panel--blue h3 { background: linear-gradient(90deg, #2F80ED, #1B5FC7); }
 .pk-panel--purple h3 { background: linear-gradient(90deg, #8E5CF7, #6E3AD6); }
 
@@ -1027,7 +1021,7 @@ footer {
   background: rgba(255,255,255,.95);
   font-size: 12px; flex-shrink: 0;
 }
-.pk-panel--red .pk-h3-badge { color: #FF0000; }
+.pk-panel--red .pk-h3-badge { color: #0B2A5B; }
 .pk-panel--blue .pk-h3-badge { color: #1B5FC7; }
 .pk-panel--purple .pk-h3-badge { color: #6E3AD6; }
 
@@ -1199,7 +1193,7 @@ footer {
 /* ---------- Catatan table (read-only) ---------- */
 .pk-notes-table { width: 100%; border-collapse: collapse; font-size: 13px; overflow: hidden; border-radius: 10px; }
 .pk-notes-table th {
-  background: linear-gradient(90deg, #2F80ED, #1B5FC7); color: #fff; text-align: left; padding: 11px 14px;
+  background: linear-gradient(90deg, #F5B400, #D89000); color: #fff; text-align: left; padding: 11px 14px;
   font-size: 11.5px; text-transform: uppercase; letter-spacing: .3px; font-weight: 700;
 }
 .pk-notes-table td {
@@ -1207,10 +1201,10 @@ footer {
   border-bottom: 1px solid var(--border);
   vertical-align: top;
 }
-.pk-notes-table tbody tr:nth-child(odd) td { background: rgba(47,128,237,.06); }
-.pk-notes-table tr:hover td { background: rgba(47,128,237,.12); }
-.pk-notes-week { color: #1B5FC7; font-weight: 700; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
-.pk-notes-week i { font-size: 12px; }
+.pk-notes-table tbody tr:nth-child(odd) td { background: rgba(245,180,0,.08); }
+.pk-notes-table tr:hover td { background: rgba(245,180,0,.16); }
+.pk-notes-week { color: #0B2A5B; font-weight: 700; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+.pk-notes-week i { font-size: 12px; color: #D89000; }
 .pk-notes-isi { white-space: pre-wrap; word-break: break-word; }
 
 /* ---------- Kegiatan (styled log table) ---------- */
@@ -1232,13 +1226,13 @@ footer {
   border: 1px solid var(--border); border-radius: 999px; padding: 8px 16px 8px 34px;
   font-size: 13px; min-width: 220px; outline: none; background: #fff;
 }
-.pk-kegiatan-toolbar .dataTables_filter input:focus { border-color: #FF0000; box-shadow: 0 0 0 3px rgba(255,0,0,.12); }
+.pk-kegiatan-toolbar .dataTables_filter input:focus { border-color: #0B2A5B; box-shadow: 0 0 0 3px rgba(11,42,91,.12); }
 .pk-search-wrap { position: relative; display: inline-flex; align-items: center; }
 .pk-search-icon { position: absolute; left: 13px; color: var(--navy); font-size: 12px; pointer-events: none; }
 
 .table-wrap #kegiatanTable { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 13px; }
 .table-wrap #kegiatanTable thead th {
-  background: linear-gradient(90deg, #FF0000, #FF0000);
+  background: linear-gradient(90deg, #0B2A5B, #061B3D);
   color: #fff; text-align: left; padding: 12px 14px;
   font-size: 11.5px; text-transform: uppercase; letter-spacing: .3px; font-weight: 700;
   position: relative; cursor: pointer; white-space: nowrap;
@@ -1283,8 +1277,8 @@ footer {
   cursor: pointer;
 }
 .pk-kegiatan-footer .dataTables_paginate .paginate_button.current {
-  background: linear-gradient(90deg, #FF0000, #FF0000) !important;
-  border-color: #FF0000 !important; color: #fff !important;
+  background: linear-gradient(90deg, #0B2A5B, #061B3D) !important;
+  border-color: #061B3D !important; color: #fff !important;
 }
 .pk-kegiatan-footer .dataTables_paginate .paginate_button.disabled { opacity: .5; cursor: default; }
 .pk-kegiatan-footer .dataTables_paginate .paginate_button:hover:not(.disabled) {
