@@ -124,6 +124,34 @@ const Dashboard = {
 
 
 
+  /**
+   * Data survei diinput 1x per triwulan (biasanya ditaruh di salah satu bulan
+   * dalam triwulan itu). Supaya panel survei tetap tampil benar di bulan
+   * manapun dalam triwulan yang sama, cari dokumen survei di ke-3 bulan
+   * triwulan tersebut, prioritaskan bulan yang sedang dipilih.
+   */
+  async loadSurveiTriwulan(tahun, bulan) {
+
+    const bulanTriwulan = (typeof getTriwulanMonths === 'function') ? getTriwulanMonths(bulan) : [bulan];
+
+    const snaps = await Promise.all(
+
+      bulanTriwulan.map(b => db.collection('survei').doc(periodeId(tahun, b)).get())
+
+    );
+
+    const selectedIdx = bulanTriwulan.indexOf(bulan);
+
+    if (selectedIdx !== -1 && snaps[selectedIdx].exists) return snaps[selectedIdx].data();
+
+    const found = snaps.find(s => s.exists);
+
+    return found ? found.data() : null;
+
+  },
+
+
+
   async loadData() {
 
     if (!this.state.tahun || !this.state.bulan) {
@@ -144,11 +172,11 @@ const Dashboard = {
 
 
 
-      const [pkSnap, surveiSnap, primaaksiSnap, monitoringSnap, pelayananSnap, kegiatanSnap, tamuSnap, sppSnap, isrTerbitSnap, catatanSnap] = await Promise.all([
+      const [pkSnap, survei, primaaksiSnap, monitoringSnap, pelayananSnap, kegiatanSnap, tamuSnap, sppSnap, isrTerbitSnap, catatanSnap] = await Promise.all([
 
         db.collection('pk').doc(id).get(),
 
-        db.collection('survei').doc(id).get(),
+        this.loadSurveiTriwulan(tahun, bulan),
 
         db.collection('primaaksi').doc(id).get(),
 
@@ -171,8 +199,6 @@ const Dashboard = {
 
 
       const pk = pkSnap.exists ? pkSnap.data() : null;
-
-      const survei = surveiSnap.exists ? surveiSnap.data() : null;
 
       const primaaksi = primaaksiSnap.exists ? primaaksiSnap.data() : null;
 
@@ -296,7 +322,7 @@ const Dashboard = {
 
     if (pct > 50) return '#F5A623';
 
-    return '#FF0000';
+    return '#C0392B';
 
   },
 
@@ -322,7 +348,7 @@ const Dashboard = {
 
     const fields = [
 
-      { key: 'Piutang', label: 'Pelayanan Piutang BHP', icon: 'fa-file-circle-check', color: '#FF0000' },
+      { key: 'Piutang', label: 'Pelayanan Piutang BHP', icon: 'fa-file-circle-check', color: '#0B2A5B' },
 
       { key: 'SOR', label: 'Penyelenggaraan Layanan SOR', icon: 'fa-id-card', color: '#F5A623' },
 
@@ -518,9 +544,23 @@ const Dashboard = {
 
     if (ketBox) {
 
-      ketBox.innerHTML = keterangan
+      const romawi = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV' };
 
-        ? `<span class="pk-survey-keterangan-pill"><i class="fa-regular fa-calendar"></i> ${Utils.escape(keterangan)}</span>`
+      const triwulanNum = (typeof getTriwulanNumber === 'function') ? getTriwulanNumber(this.state.bulan) : null;
+
+      const triwulanLabel = triwulanNum ? `Triwulan ${romawi[triwulanNum] || triwulanNum}` : '';
+
+      const extraNote = (keterangan && !/^triwulan/i.test(keterangan.trim())) ? ` &bull; ${Utils.escape(keterangan)}` : '';
+
+      const pillText = triwulanLabel
+
+        ? `${triwulanLabel}${extraNote}`
+
+        : Utils.escape(keterangan);
+
+      ketBox.innerHTML = pillText
+
+        ? `<span class="pk-survey-keterangan-pill"><i class="fa-regular fa-calendar"></i> ${pillText}</span>`
 
         : '';
 
@@ -530,13 +570,13 @@ const Dashboard = {
 
     box.innerHTML = `
 
-      <div class="pk-survey-card" style="--card-color:#FF0000; background:linear-gradient(160deg,#FF000022,#FF000008);">
+      <div class="pk-survey-card" style="--card-color:#0B2A5B; background:linear-gradient(160deg,#0B2A5B22,#0B2A5B08);">
 
-        <div class="pk-survey-icon" style="background:#FF0000; color:#fff;"><i class="fa-solid fa-clipboard-check"></i></div>
+        <div class="pk-survey-icon" style="background:#0B2A5B; color:#fff;"><i class="fa-solid fa-clipboard-check"></i></div>
 
         <div class="pk-survey-label">IKM / IPKP</div>
 
-        <div class="pk-survey-value" style="color:#FF0000;">${ikm}</div>
+        <div class="pk-survey-value" style="color:#0B2A5B;">${ikm}</div>
 
         <div class="pk-survey-stars">${this.starsHtml(ikm, 4)}</div>
 
@@ -548,7 +588,7 @@ const Dashboard = {
 
         <div class="pk-survey-label">IIPP / IPAK</div>
 
-        <div class="pk-survey-value" style="color:#FF0000;">${ipak}</div>
+        <div class="pk-survey-value" style="color:#0B2A5B;">${ipak}</div>
 
         <div class="pk-survey-stars">${this.starsHtml(ipak, 10)}</div>
 
@@ -629,12 +669,12 @@ const Dashboard = {
       const cabut = Number(isr.Cabut) || 0;
       isrBox.innerHTML = `
         <div class="pk-pelayanan-card">
-          <div class="pk-pelayanan-wash" style="--card-color:#FF0000"></div>
-          <div class="pk-pelayanan-dots" style="color:#FF0000"></div>
-          <div class="pk-pelayanan-icon" style="--card-color:#FF0000"><i class="fa-solid fa-file-circle-check"></i></div>
-          <div class="pk-pelayanan-value" style="color:#FF0000">${terbit}</div>
+          <div class="pk-pelayanan-wash" style="--card-color:#0B2A5B"></div>
+          <div class="pk-pelayanan-dots" style="color:#0B2A5B"></div>
+          <div class="pk-pelayanan-icon" style="--card-color:#0B2A5B"><i class="fa-solid fa-file-circle-check"></i></div>
+          <div class="pk-pelayanan-value" style="color:#0B2A5B">${terbit}</div>
           <div class="pk-pelayanan-label">Jumlah Terbit ISR</div>
-          <div class="pk-pelayanan-underline" style="background:#FF0000"></div>
+          <div class="pk-pelayanan-underline" style="background:#0B2A5B"></div>
         </div>
         <div class="pk-pelayanan-card">
           <div class="pk-pelayanan-wash" style="--card-color:#F5A623"></div>
@@ -657,7 +697,7 @@ const Dashboard = {
       const sppDef = [
         { color: '#2F80ED', icon: 'fa-calendar-check', value: annual, label: 'SPP Annual' },
         { color: '#F5A623', icon: 'fa-bell', value: reminder, label: 'SPP Reminder' },
-        { color: '#FF0000', icon: 'fa-file-circle-plus', value: baru, label: 'SPP New' },
+        { color: '#0B2A5B', icon: 'fa-file-circle-plus', value: baru, label: 'SPP New' },
         { color: '#F5722F', icon: 'fa-rotate', value: renewal, label: 'SPP Renewal' }
       ];
       sppBox.innerHTML = sppDef.map(d => `
@@ -704,7 +744,7 @@ const Dashboard = {
 
     }
 
-    const palette = ['#FF0000', '#FFF000', '#FF6D00', '#FFF000', '#FF0000', '#FF3D00', '#FF0000', '#FFF000'];
+    const palette = ['#0B2A5B', '#F5B400', '#061B3D', '#F5B400', '#0B2A5B', '#F5B400', '#061B3D', '#F5B400'];
 
     box.innerHTML = rows.map((r, i) => {
 
@@ -780,11 +820,11 @@ const Dashboard = {
 
     // Palet warna & ikon per jenis kegiatan (dicocokkan dari kata kunci judul, dengan fallback bergilir)
 
-    const palette = ['#FF0000', '#F5A623', '#27AE60', '#8E5CF7', '#2F80ED'];
+    const palette = ['#0B2A5B', '#F5A623', '#27AE60', '#8E5CF7', '#2F80ED'];
 
     const themeRules = [
 
-      { test: /unar/i, icon: 'fa-bullhorn', color: '#FF0000' },
+      { test: /unar/i, icon: 'fa-bullhorn', color: '#0B2A5B' },
 
       { test: /mots/i, icon: 'fa-tower-broadcast', color: '#F5A623' },
 
