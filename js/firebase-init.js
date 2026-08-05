@@ -31,6 +31,24 @@ function getTriwulanNumber(bulan) {
   return Math.floor(idx / 3) + 1;
 }
 
+/**
+ * Jumlah maksimal triwulan yang DITAMPILKAN di dashboard untuk bulan tertentu.
+ * Aturan (custom, bukan triwulan kalender biasa):
+ *  - Jan, Feb, Mar        -> tampil Triwulan I saja            (max = 1)
+ *  - Apr, Mei, Jun, Jul, Agu -> tampil Triwulan I & II          (max = 2)
+ *  - Sep, Okt, Nov         -> tampil Triwulan I, II, & III      (max = 3)
+ *  - Des                   -> tampil Triwulan I, II, III, & IV  (max = 4)
+ */
+function getMaxTriwulanToShow(bulan) {
+  const idx = BULAN_ORDER.indexOf(bulan);
+  if (idx === -1) return 1;
+  // idx: 0=Jan ... 11=Des
+  if (idx <= 2) return 1;        // Jan(0) - Mar(2)
+  if (idx <= 7) return 2;        // Apr(3) - Agu(7)
+  if (idx <= 10) return 3;       // Sep(8) - Nov(10)
+  return 4;                      // Des(11)
+}
+
 /** Pastikan dokumen periode tercatat di collection "periode" (untuk isi dropdown filter) */
 async function upsertPeriode(tahun, bulan) {
   await db.collection('periode').doc(periodeId(tahun, bulan)).set({
