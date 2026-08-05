@@ -1095,17 +1095,6 @@ footer {
 .pk-survey-keterangan { margin-bottom: 12px; }
 .pk-survey-block { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px dashed var(--border); }
 .pk-survey-block:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-.pk-survey-tw-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-@media (max-width: 700px) { .pk-survey-tw-grid { grid-template-columns: 1fr; } }
-.pk-survey-block--card {
-  margin-bottom: 0; padding: 16px; border-bottom: none;
-  border: 1px solid var(--border); border-radius: var(--radius-sm);
-  background: #fff;
-}
-.pk-survey-block--card .pk-survey-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
-.pk-survey-grid--4col { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-@media (max-width: 700px) { .pk-survey-grid--4col { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 420px) { .pk-survey-grid--4col { grid-template-columns: 1fr; } }
 .pk-survey-block-title {
   font-size: 12.5px; font-weight: 700; color: var(--navy); text-transform: uppercase;
   letter-spacing: .3px; margin-bottom: 10px; display: flex; align-items: center; gap: 7px;
