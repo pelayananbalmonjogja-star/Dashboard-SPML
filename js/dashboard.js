@@ -126,27 +126,30 @@ const Dashboard = {
 
   /**
    * Data survei diinput 1x per triwulan (biasanya ditaruh di salah satu bulan
-   * dalam triwulan itu). Supaya panel survei tetap tampil benar di bulan
-   * manapun dalam triwulan yang sama, cari dokumen survei di ke-3 bulan
-   * triwulan tersebut, prioritaskan bulan yang sedang dipilih.
+   * dalam triwulan itu). Ambil SEMUA triwulan dari Triwulan I sampai triwulan
+   * yang sesuai dengan bulan yang sedang dipilih (kumulatif dalam 1 tahun),
+   * supaya kalau sudah masuk Triwulan II misalnya, hasil Triwulan I & II
+   * dua-duanya tampil.
    */
-  async loadSurveiTriwulan(tahun, bulan) {
+  async loadSurveiList(tahun, bulan) {
 
-    const bulanTriwulan = (typeof getTriwulanMonths === 'function') ? getTriwulanMonths(bulan) : [bulan];
+    const currentTw = (typeof getTriwulanNumber === 'function') ? (getTriwulanNumber(bulan) || 1) : 1;
 
-    const snaps = await Promise.all(
+    const twNumbers = Array.from({ length: currentTw }, (_, i) => i + 1);
 
-      bulanTriwulan.map(b => db.collection('survei').doc(periodeId(tahun, b)).get())
+    const results = await Promise.all(twNumbers.map(async (tw) => {
 
-    );
+      const months = BULAN_ORDER.slice((tw - 1) * 3, tw * 3);
 
-    const selectedIdx = bulanTriwulan.indexOf(bulan);
+      const snaps = await Promise.all(months.map(b => db.collection('survei').doc(periodeId(tahun, b)).get()));
 
-    if (selectedIdx !== -1 && snaps[selectedIdx].exists) return snaps[selectedIdx].data();
+      const found = snaps.find(s => s.exists);
 
-    const found = snaps.find(s => s.exists);
+      return found ? { triwulan: tw, ...found.data() } : null;
 
-    return found ? found.data() : null;
+    }));
+
+    return results.filter(Boolean);
 
   },
 
@@ -176,7 +179,7 @@ const Dashboard = {
 
         db.collection('pk').doc(id).get(),
 
-        this.loadSurveiTriwulan(tahun, bulan),
+        this.loadSurveiList(tahun, bulan),
 
         db.collection('primaaksi').doc(id).get(),
 
@@ -512,101 +515,85 @@ const Dashboard = {
 
   /* ---------------- SURVEY ---------------- */
 
-  renderSurvey(survei) {
+  renderSurvey(surveiList) {
 
-    const box = document.getElementById('surveyGrid');
+    const list = document.getElementById('surveyList');
 
-    const respondenBox = document.getElementById('surveyResponden');
+    if (!surveiList || surveiList.length === 0) {
 
-    const ketBox = document.getElementById('surveyKeterangan');
-
-    if (!survei) {
-
-      box.innerHTML = `<div class="state-box">Belum ada data survei.</div>`;
-
-      respondenBox.innerHTML = '';
-
-      if (ketBox) ketBox.innerHTML = '';
+      list.innerHTML = `<div class="state-box">Belum ada data survei.</div>`;
 
       return;
 
     }
 
-    const ikm = Number(survei.IKM) || 0;
+    const romawi = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV' };
 
-    const ipak = Number(survei.IPAK) || 0;
+    list.innerHTML = surveiList.map(survei => {
 
-    const responden = Number(survei.Responden) || 0;
+      const ikm = Number(survei.IKM) || 0;
 
-    const keterangan = survei.Keterangan || '';
+      const ipak = Number(survei.IPAK) || 0;
 
+      const responden = Number(survei.Responden) || 0;
 
+      const keterangan = survei.Keterangan || '';
 
-    if (ketBox) {
-
-      const romawi = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV' };
-
-      const triwulanNum = (typeof getTriwulanNumber === 'function') ? getTriwulanNumber(this.state.bulan) : null;
-
-      const triwulanLabel = triwulanNum ? `Triwulan ${romawi[triwulanNum] || triwulanNum}` : '';
+      const triwulanLabel = `Triwulan ${romawi[survei.triwulan] || survei.triwulan}`;
 
       const extraNote = (keterangan && !/^triwulan/i.test(keterangan.trim())) ? ` &bull; ${Utils.escape(keterangan)}` : '';
 
-      const pillText = triwulanLabel
+      return `
 
-        ? `${triwulanLabel}${extraNote}`
+        <div class="pk-survey-block">
 
-        : Utils.escape(keterangan);
+          <div class="pk-survey-block-title"><i class="fa-solid fa-circle"></i> ${triwulanLabel}${extraNote}</div>
 
-      ketBox.innerHTML = pillText
+          <div class="pk-survey-grid">
 
-        ? `<span class="pk-survey-keterangan-pill"><i class="fa-regular fa-calendar"></i> ${pillText}</span>`
+            <div class="pk-survey-card" style="--card-color:#0B2A5B; background:linear-gradient(160deg,#0B2A5B22,#0B2A5B08);">
 
-        : '';
+              <div class="pk-survey-icon" style="background:#0B2A5B; color:#fff;"><i class="fa-solid fa-clipboard-check"></i></div>
 
-    }
+              <div class="pk-survey-label">IKM / IPKP</div>
 
+              <div class="pk-survey-value" style="color:#0B2A5B;">${ikm}</div>
 
+              <div class="pk-survey-stars">${this.starsHtml(ikm, 4)}</div>
 
-    box.innerHTML = `
+            </div>
 
-      <div class="pk-survey-card" style="--card-color:#0B2A5B; background:linear-gradient(160deg,#0B2A5B22,#0B2A5B08);">
+            <div class="pk-survey-card" style="--card-color:#2F80ED; background:linear-gradient(160deg,#2F80ED22,#2F80ED08);">
 
-        <div class="pk-survey-icon" style="background:#0B2A5B; color:#fff;"><i class="fa-solid fa-clipboard-check"></i></div>
+              <div class="pk-survey-icon" style="background:#2F80ED; color:#fff;"><i class="fa-solid fa-arrow-trend-up"></i></div>
 
-        <div class="pk-survey-label">IKM / IPKP</div>
+              <div class="pk-survey-label">IIPP / IPAK</div>
 
-        <div class="pk-survey-value" style="color:#0B2A5B;">${ikm}</div>
+              <div class="pk-survey-value" style="color:#0B2A5B;">${ipak}</div>
 
-        <div class="pk-survey-stars">${this.starsHtml(ikm, 4)}</div>
+              <div class="pk-survey-stars">${this.starsHtml(ipak, 10)}</div>
 
-      </div>
+            </div>
 
-      <div class="pk-survey-card" style="--card-color:#2F80ED; background:linear-gradient(160deg,#2F80ED22,#2F80ED08);">
+          </div>
 
-        <div class="pk-survey-icon" style="background:#2F80ED; color:#fff;"><i class="fa-solid fa-arrow-trend-up"></i></div>
+          <div class="pk-survey-responden">
 
-        <div class="pk-survey-label">IIPP / IPAK</div>
+            <div class="pk-survey-responden-icon"><i class="fa-solid fa-users"></i></div>
 
-        <div class="pk-survey-value" style="color:#0B2A5B;">${ipak}</div>
+            <div>
 
-        <div class="pk-survey-stars">${this.starsHtml(ipak, 10)}</div>
+              <div class="pk-survey-responden-label">Jumlah Responden</div>
 
-      </div>`;
+              <div class="pk-survey-responden-value">${responden} Responden</div>
 
+            </div>
 
+          </div>
 
-    respondenBox.innerHTML = `
+        </div>`;
 
-      <div class="pk-survey-responden-icon"><i class="fa-solid fa-users"></i></div>
-
-      <div>
-
-        <div class="pk-survey-responden-label">Jumlah Responden</div>
-
-        <div class="pk-survey-responden-value">${responden} Responden</div>
-
-      </div>`;
+    }).join('');
 
   },
 
