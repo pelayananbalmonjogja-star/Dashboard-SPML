@@ -529,7 +529,7 @@ const Dashboard = {
 
     const romawi = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV' };
 
-    list.innerHTML = surveiList.map(survei => {
+    list.innerHTML = `<div class="pk-survey-tw-grid">` + surveiList.map(survei => {
 
       const ikm = Number(survei.IKM) || 0;
 
@@ -545,7 +545,7 @@ const Dashboard = {
 
       return `
 
-        <div class="pk-survey-block">
+        <div class="pk-survey-block pk-survey-block--card">
 
           <div class="pk-survey-block-title"><i class="fa-solid fa-circle"></i> ${triwulanLabel}${extraNote}</div>
 
@@ -593,7 +593,7 @@ const Dashboard = {
 
         </div>`;
 
-    }).join('');
+    }).join('') + `</div>`;
 
   },
 
@@ -602,10 +602,8 @@ const Dashboard = {
   /* ---------------- JUMLAH TAMU PELAYANAN (format sama seperti survey) ---------------- */
   renderTamu(tamu) {
     const box = document.getElementById('tamuGrid');
-    const ooBox = document.getElementById('pelayananOOGrid');
     if (!tamu) {
       box.innerHTML = `<div class="state-box">Belum ada data tamu pelayanan.</div>`;
-      ooBox.innerHTML = '';
       return;
     }
     const broadcast = Number(tamu.TamuBroadcast) || 0;
@@ -627,9 +625,7 @@ const Dashboard = {
           <div class="pk-survey-value" style="color:#F5A623;">${nonBroadcast}</div>
           <div class="pk-survey-label">Tamu Non Broadcast</div>
         </div>
-      </div>`;
-
-    ooBox.innerHTML = `
+      </div>
       <div class="pk-survey-card pk-survey-card--row" style="--card-color:#27AE60; background:linear-gradient(160deg,#27AE6022,#27AE6008);">
         <div class="pk-survey-icon" style="background:#27AE60; color:#fff;"><i class="fa-solid fa-globe"></i></div>
         <div>
