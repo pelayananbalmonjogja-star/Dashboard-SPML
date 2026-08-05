@@ -126,14 +126,16 @@ const Dashboard = {
 
   /**
    * Data survei diinput 1x per triwulan (biasanya ditaruh di salah satu bulan
-   * dalam triwulan itu). Ambil SEMUA triwulan dari Triwulan I sampai triwulan
-   * yang sesuai dengan bulan yang sedang dipilih (kumulatif dalam 1 tahun),
-   * supaya kalau sudah masuk Triwulan II misalnya, hasil Triwulan I & II
-   * dua-duanya tampil.
+   * dalam triwulan itu). Ambil SEMUA triwulan yang seharusnya sudah tampil
+   * untuk bulan yang sedang dipilih, mengikuti aturan custom berikut:
+   *  - Jan, Feb, Mar         -> Triwulan I saja
+   *  - Apr, Mei, Jun, Jul, Agu -> Triwulan I & II
+   *  - Sep, Okt, Nov          -> Triwulan I, II, & III
+   *  - Des                    -> Triwulan I, II, III, & IV
    */
   async loadSurveiList(tahun, bulan) {
 
-    const currentTw = (typeof getTriwulanNumber === 'function') ? (getTriwulanNumber(bulan) || 1) : 1;
+    const currentTw = (typeof getMaxTriwulanToShow === 'function') ? (getMaxTriwulanToShow(bulan) || 1) : 1;
 
     const twNumbers = Array.from({ length: currentTw }, (_, i) => i + 1);
 
