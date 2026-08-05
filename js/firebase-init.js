@@ -16,6 +16,21 @@ function periodeId(tahun, bulan) {
   return `${tahun}_${bulan}`;
 }
 
+/** Daftar 3 nama bulan dalam satu triwulan yang sama dengan `bulan` (mis. "Mei" -> ["April","Mei","Juni"]) */
+function getTriwulanMonths(bulan) {
+  const idx = BULAN_ORDER.indexOf(bulan);
+  if (idx === -1) return [bulan];
+  const startIdx = Math.floor(idx / 3) * 3;
+  return BULAN_ORDER.slice(startIdx, startIdx + 3);
+}
+
+/** Nomor triwulan (1-4) dari nama bulan */
+function getTriwulanNumber(bulan) {
+  const idx = BULAN_ORDER.indexOf(bulan);
+  if (idx === -1) return null;
+  return Math.floor(idx / 3) + 1;
+}
+
 /** Pastikan dokumen periode tercatat di collection "periode" (untuk isi dropdown filter) */
 async function upsertPeriode(tahun, bulan) {
   await db.collection('periode').doc(periodeId(tahun, bulan)).set({
