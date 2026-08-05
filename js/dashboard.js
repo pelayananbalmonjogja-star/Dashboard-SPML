@@ -125,16 +125,36 @@ const Dashboard = {
 
 
   /**
-   * Data survei diinput 1x per triwulan (biasanya ditaruh di salah satu bulan
-   * dalam triwulan itu). Ambil SEMUA triwulan yang seharusnya sudah tampil
-   * untuk bulan yang sedang dipilih, mengikuti aturan custom berikut:
-   *  - Jan, Feb, Mar         -> Triwulan I saja
-   *  - Apr, Mei, Jun, Jul, Agu -> Triwulan I & II
-   *  - Sep, Okt, Nov          -> Triwulan I, II, & III
-   *  - Des                    -> Triwulan I, II, III, & IV
+   * Data survei ditarik berdasarkan isi field "Keterangan" yang diinput di
+   * halaman Data Bulanan, BUKAN sekadar dokumen yang ada di bulan itu:
+   *  - Kalau Keterangan-nya menyebut "Triwulan" -> dianggap data triwulan,
+   *    dan ikut aturan cascade di bawah.
+   *  - Kalau Keterangan-nya menyebut "Bulan ..." (bulanan) -> data itu
+   *    TIDAK ditampilkan di rangkaian triwulan (kecuali untuk kasus khusus
+   *    Januari & Februari di bawah).
+   *
+   * Aturan tampil per bulan yang sedang dipilih di dashboard:
+   *  - Januari, Februari       -> tampilkan data BULANAN bulan itu sendiri
+   *                                (kalau memang ada inputnya)
+   *  - Maret, April, Mei       -> Triwulan I
+   *  - Juni, Juli, Agustus     -> Triwulan I & II
+   *  - September, Oktober, November -> Triwulan I, II, & III
+   *  - Desember                -> Triwulan I, II, III, & IV
    */
   async loadSurveiList(tahun, bulan) {
 
+    // --- Kasus khusus: Januari & Februari -> tampilkan data bulanan itu sendiri ---
+    if (typeof isBulanKhusus === 'function' && isBulanKhusus(bulan)) {
+
+      const snap = await db.collection('survei').doc(periodeId(tahun, bulan)).get();
+
+      if (!snap.exists) return [];
+
+      return [{ bulanan: true, bulan: bulan, ...snap.data() }];
+
+    }
+
+    // --- Bulan Maret dst -> cascade data yang keterangannya "Triwulan" ---
     const currentTw = (typeof getMaxTriwulanToShow === 'function') ? (getMaxTriwulanToShow(bulan) || 1) : 1;
 
     const twNumbers = Array.from({ length: currentTw }, (_, i) => i + 1);
@@ -145,7 +165,8 @@ const Dashboard = {
 
       const snaps = await Promise.all(months.map(b => db.collection('survei').doc(periodeId(tahun, b)).get()));
 
-      const found = snaps.find(s => s.exists);
+      // Hanya ambil dokumen yang Keterangan-nya memang ditulis sebagai "Triwulan ..."
+      const found = snaps.find(s => s.exists && /triwulan/i.test((s.data().Keterangan || '').trim()));
 
       return found ? { triwulan: tw, ...found.data() } : null;
 
@@ -541,15 +562,24 @@ const Dashboard = {
 
       const keterangan = survei.Keterangan || '';
 
-      const triwulanLabel = `Triwulan ${romawi[survei.triwulan] || survei.triwulan}`;
+      const periodeLabel = survei.bulanan
+        ? `Bulan ${survei.bulan}`
+        : `Triwulan ${romawi[survei.triwulan] || survei.triwulan}`;
 
-      const extraNote = (keterangan && !/^triwulan/i.test(keterangan.trim())) ? ` &bull; ${Utils.escape(keterangan)}` : '';
+      // Jangan ulangi keterangan kalau isinya cuma menegaskan ulang label periode
+      // (mis. "Triwulan I" saat labelnya sudah "Triwulan I", atau "Bulan Januari"
+      // saat labelnya sudah "Bulan Januari").
+      const ketTrim = keterangan.trim();
+
+      const extraNote = (ketTrim && !/^triwulan/i.test(ketTrim) && !/^bulan/i.test(ketTrim))
+        ? ` &bull; ${Utils.escape(keterangan)}`
+        : '';
 
       return `
 
         <div class="pk-survey-block pk-survey-block--card">
 
-          <div class="pk-survey-block-title"><i class="fa-solid fa-circle"></i> ${triwulanLabel}${extraNote}</div>
+          <div class="pk-survey-block-title"><i class="fa-solid fa-circle"></i> ${periodeLabel}${extraNote}</div>
 
           <div class="pk-survey-grid">
 
