@@ -14,17 +14,34 @@
 
 const TARGET_OPERASIONAL = 85; // target garis acuan gauge Operasional (%)
 
+// Label & ikon tampilan untuk tiap kategori "Bukti Dukung" (harus sinkron dengan
+// pilihan "Kategori" di form Bukti Dukung pada halaman Data Bulanan / input.html).
+const BUKTI_KATEGORI = {
+  kpi: { label: 'Capaian Perjanjian Kinerja', icon: 'fa-gauge' },
+  operasional: { label: 'Monitoring Perangkat SMFR', icon: 'fa-tower-broadcast' },
+  primaaksi: { label: 'PrimaAksi — Verifikasi Site ISR', icon: 'fa-chart-pie' },
+  survey: { label: 'Survey Kepuasan Pelayanan Publik', icon: 'fa-star' },
+  tamu: { label: 'Jumlah Tamu Pelayanan', icon: 'fa-user-group' },
+  isr: { label: 'Penerbitan & Pencabutan ISR', icon: 'fa-file-shield' },
+  spp: { label: 'Penerbitan SPP BHP', icon: 'fa-file-invoice-dollar' },
+  pelayanan: { label: 'Realisasi Kegiatan SPML', icon: 'fa-people-group' },
+  kegiatan: { label: 'Kegiatan', icon: 'fa-calendar-check' },
+  catatan: { label: 'Catatan', icon: 'fa-note-sticky' }
+};
+
 
 
 const Dashboard = {
 
-  state: { tahun: '', bulan: '', dataTable: null },
+  state: { tahun: '', bulan: '', dataTable: null, buktiDukung: [] },
 
 
 
   async init() {
 
     this.setupSidebarToggle();
+
+    this.setupBuktiDrawer();
 
 
 
@@ -52,22 +69,174 @@ const Dashboard = {
 
 
 
+  /**
+   * Sidebar bisa "buka/tutup" dengan dua perilaku berbeda tergantung ukuran layar:
+   *  - Desktop (>880px): tombol hamburger di topbar menciutkan sidebar jadi
+   *    rel ikon saja (class "collapsed"). Ada juga tombol khusus di kaki
+   *    sidebar untuk hal yang sama. Status terakhir disimpan di localStorage.
+   *  - Mobile (<=880px): sidebar disembunyikan di luar layar dan tombol
+   *    hamburger menampilkannya sebagai overlay (class "open") lengkap
+   *    dengan backdrop gelap yang bisa diklik untuk menutup.
+   */
   setupSidebarToggle() {
 
-    const btn = document.getElementById('btnSidebarToggle');
-
+    const btnHamburger = document.getElementById('btnSidebarToggle');
+    const btnCollapse = document.getElementById('btnSidebarCollapse');
     const sidebar = document.getElementById('pkSidebar');
+    const backdrop = document.getElementById('pkSidebarBackdrop');
+    if (!sidebar) return;
 
-    if (!btn || !sidebar) return;
+    const isMobile = () => window.innerWidth <= 880;
 
-    btn.addEventListener('click', () => sidebar.classList.toggle('open'));
+    const openMobile = () => {
+      sidebar.classList.add('open');
+      if (backdrop) backdrop.classList.add('open');
+    };
+    const closeMobile = () => {
+      sidebar.classList.remove('open');
+      if (backdrop) backdrop.classList.remove('open');
+    };
+
+    const toggleCollapse = () => {
+      const collapsed = sidebar.classList.toggle('collapsed');
+      try { localStorage.setItem('pkSidebarCollapsed', collapsed ? '1' : '0'); } catch (e) {}
+    };
+
+    // Terapkan preferensi ciut/lebar dari kunjungan sebelumnya (khusus desktop).
+    try {
+      if (!isMobile() && localStorage.getItem('pkSidebarCollapsed') === '1') {
+        sidebar.classList.add('collapsed');
+      }
+    } catch (e) {}
+
+    if (btnHamburger) {
+      btnHamburger.addEventListener('click', () => {
+        if (isMobile()) {
+          sidebar.classList.contains('open') ? closeMobile() : openMobile();
+        } else {
+          toggleCollapse();
+        }
+      });
+    }
+
+    if (btnCollapse) {
+      btnCollapse.addEventListener('click', toggleCollapse);
+    }
+
+    if (backdrop) {
+      backdrop.addEventListener('click', closeMobile);
+    }
 
     document.querySelectorAll('.pk-nav-item').forEach(a => {
-
-      a.addEventListener('click', () => sidebar.classList.remove('open'));
-
+      a.addEventListener('click', () => {
+        document.querySelectorAll('.pk-nav-item').forEach(x => x.classList.remove('active'));
+        a.classList.add('active');
+        if (isMobile()) closeMobile();
+      });
     });
 
+    window.addEventListener('resize', () => {
+      if (!isMobile()) closeMobile();
+    });
+
+  },
+
+  /* ---------------- BUKTI DUKUNG (drawer detail per kategori sub-data) ---------------- */
+
+  setupBuktiDrawer() {
+
+    const drawer = document.getElementById('buktiDrawer');
+    const backdrop = document.getElementById('buktiBackdrop');
+    const closeBtn = document.getElementById('buktiDrawerClose');
+    if (!drawer || !backdrop) return;
+
+    const close = () => {
+      drawer.classList.remove('open');
+      backdrop.classList.remove('open');
+    };
+
+    closeBtn?.addEventListener('click', close);
+    backdrop.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+
+    // Delegasi klik: semua tombol pemicu (di sidebar & di header tiap panel)
+    // punya atribut data-kategori yang sama, jadi cukup satu listener global.
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('.pk-nav-bukti, .pk-bukti-btn');
+      if (!trigger) return;
+      e.preventDefault();
+      e.stopPropagation();
+      this.openBuktiDrawer(trigger.dataset.kategori);
+    });
+
+  },
+
+  openBuktiDrawer(kategori) {
+
+    const drawer = document.getElementById('buktiDrawer');
+    const backdrop = document.getElementById('buktiBackdrop');
+    const titleEl = document.getElementById('buktiDrawerTitle');
+    const subEl = document.getElementById('buktiDrawerSub');
+    const bodyEl = document.getElementById('buktiDrawerBody');
+    if (!drawer || !bodyEl) return;
+
+    const meta = BUKTI_KATEGORI[kategori] || { label: 'Data', icon: 'fa-folder-open' };
+    titleEl.textContent = meta.label;
+    subEl.textContent = this.state.bulan && this.state.tahun ? `Periode ${this.state.bulan} ${this.state.tahun}` : '';
+
+    const items = (this.state.buktiDukung || []).filter(b => b.kategori === kategori);
+
+    if (items.length === 0) {
+      bodyEl.innerHTML = `
+        <div class="pk-drawer-empty">
+          <i class="fa-regular fa-folder-open"></i>
+          <strong>Belum ada bukti dukung</strong>
+          <p>Bukti dukung untuk "${Utils.escape(meta.label)}" pada periode ini belum diinput.<br>Tambahkan lewat halaman Data Bulanan &rarr; tab "Bukti Dukung".</p>
+        </div>`;
+    } else {
+      bodyEl.innerHTML = items.map(b => {
+        const hasLink = !!(b.link && String(b.link).trim());
+        const isFile = !!(b.storagePath && String(b.storagePath).trim());
+        const tag = hasLink ? 'a' : 'div';
+        const attrs = hasLink ? `href="${Utils.escape(b.link)}" target="_blank" rel="noopener"` : '';
+        const icon = isFile ? 'fa-paperclip' : (hasLink ? 'fa-link' : meta.icon);
+        const linkLine = isFile
+          ? `<div class="pk-bukti-item-link"><i class="fa-solid fa-file"></i> ${Utils.escape(b.fileName || 'Lihat file terlampir')}</div>`
+          : (hasLink ? `<div class="pk-bukti-item-link">${Utils.escape(b.link)}</div>` : '');
+        return `
+          <${tag} class="pk-bukti-item ${hasLink ? '' : 'pk-bukti-item-nolink'}" ${attrs}>
+            <div class="pk-bukti-item-head">
+              <div class="pk-bukti-item-icon"><i class="fa-solid ${icon}"></i></div>
+              <div style="flex:1; min-width:0;">
+                <div class="pk-bukti-item-title">${Utils.escape(b.judul || 'Tanpa judul')}</div>
+                ${linkLine}
+              </div>
+              ${hasLink ? `<div class="pk-bukti-item-open"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>` : ''}
+            </div>
+            ${b.keterangan ? `<div class="pk-bukti-item-ket">${Utils.escape(b.keterangan)}</div>` : ''}
+          </${tag}>`;
+      }).join('');
+    }
+
+    drawer.classList.add('open');
+    backdrop.classList.add('open');
+  },
+
+  /** Tandai tombol paperclip di sidebar (dan beri jumlah) untuk kategori yang sudah punya bukti dukung. */
+  renderBuktiBadges() {
+    const counts = {};
+    (this.state.buktiDukung || []).forEach(b => {
+      counts[b.kategori] = (counts[b.kategori] || 0) + 1;
+    });
+    document.querySelectorAll('.pk-nav-bukti[data-kategori]').forEach(btn => {
+      const n = counts[btn.dataset.kategori] || 0;
+      btn.classList.toggle('has-data', n > 0);
+      btn.setAttribute('title', n > 0 ? `${n} bukti dukung tersedia` : btn.getAttribute('title'));
+    });
+    document.querySelectorAll('.pk-bukti-btn[data-kategori]').forEach(btn => {
+      const n = counts[btn.dataset.kategori] || 0;
+      btn.classList.toggle('has-data', n > 0);
+    });
   },
 
 
@@ -198,7 +367,7 @@ const Dashboard = {
 
 
 
-      const [pkSnap, survei, primaaksiSnap, monitoringSnap, pelayananSnap, kegiatanSnap, tamuSnap, sppSnap, isrTerbitSnap, catatanSnap] = await Promise.all([
+      const [pkSnap, survei, primaaksiSnap, monitoringSnap, pelayananSnap, kegiatanSnap, tamuSnap, sppSnap, isrTerbitSnap, catatanSnap, buktiDukungSnap] = await Promise.all([
 
         db.collection('pk').doc(id).get(),
 
@@ -218,7 +387,9 @@ const Dashboard = {
 
         db.collection('isrTerbit').doc(id).get(),
 
-        db.collection('catatan').where('tahun', '==', tahun).where('bulan', '==', bulan).get()
+        db.collection('catatan').where('tahun', '==', tahun).where('bulan', '==', bulan).get(),
+
+        db.collection('buktidukung').where('tahun', '==', tahun).where('bulan', '==', bulan).get()
 
       ]);
 
@@ -242,9 +413,15 @@ const Dashboard = {
 
       const catatan = []; catatanSnap.forEach(d => catatan.push({ id: d.id, ...d.data() }));
 
+      const buktiDukung = []; buktiDukungSnap.forEach(d => buktiDukung.push({ id: d.id, ...d.data() }));
+
+      this.state.buktiDukung = buktiDukung;
+
 
 
       this.renderAll({ pk, survei, primaaksi, monitoring, pelayanan, kegiatan, tamu, spp, isrTerbit, catatan });
+
+      this.renderBuktiBadges();
 
     } catch (err) {
 
