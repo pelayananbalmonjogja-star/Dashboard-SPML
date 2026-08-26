@@ -1108,25 +1108,34 @@ const Dashboard = {
 
     const sorted = [...rows].sort((a, b) => (a.tanggal || '').localeCompare(b.tanggal || ''));
 
-    const body = sorted.map(r => `
+    const colors = ['var(--navy)', 'var(--orange)', 'var(--green)'];
 
-      <tr>
+    const cards = sorted.map((r, idx) => {
 
-        <td class="pk-notes-isi">${Utils.escape(r.keterangan || '').replace(/\n/g, '<br>')}</td>
+      const color = colors[idx % colors.length];
 
-        <td class="pk-notes-week"><i class="fa-regular fa-calendar"></i>${Utils.escape(r.tanggal || '-')}</td>
+      const nomor = String(idx + 1).padStart(2, '0');
 
-      </tr>`).join('');
+      return `
+        <div class="pk-notes-card" style="--card-color:${color};">
+          <div class="pk-notes-badge">${nomor}</div>
+          <div class="pk-notes-body">
+            <div class="pk-notes-keterangan">${Utils.escape(r.keterangan || '').replace(/\n/g, '<br>')}</div>
+          </div>
+          <div class="pk-notes-date">
+            <span class="pk-notes-date-icon"><i class="fa-regular fa-calendar"></i></span>
+            ${Utils.escape(r.tanggal || '-')}
+          </div>
+        </div>`;
+
+    }).join('');
 
     wrap.innerHTML = `
-
-      <table class="pk-notes-table">
-
-        <thead><tr><th>Keterangan</th><th style="width:18%;">Tanggal</th></tr></thead>
-
-        <tbody>${body}</tbody>
-
-      </table>`;
+      <div class="pk-notes-header">
+        <div class="pk-notes-header-keterangan">Keterangan</div>
+        <div class="pk-notes-header-tanggal">Tanggal</div>
+      </div>
+      <div class="pk-notes-list">${cards}</div>`;
 
   },
 
