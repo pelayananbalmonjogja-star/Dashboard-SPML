@@ -10,8 +10,9 @@ firebase.initializeApp(FIREBASE_CONFIG);
 const db = firebase.firestore();
 // auth hanya dipakai di input.html (butuh firebase-auth-compat.js dimuat di HTML)
 const auth = (typeof firebase.auth === 'function') ? firebase.auth() : null;
-// storage hanya dipakai di input.html untuk upload file "Bukti Dukung"
-// (butuh firebase-storage-compat.js dimuat di HTML)
+// Catatan: fitur upload file ke Firebase Storage sudah tidak dipakai lagi —
+// semua bukti dukung / dokumen kegiatan kini cukup berupa link. Variabel ini
+// dibiarkan ada (bernilai null) agar tidak ada referensi lama yang error.
 const storage = (typeof firebase.storage === 'function') ? firebase.storage() : null;
 
 /** ID dokumen periode, format konsisten: 2026_Juni */

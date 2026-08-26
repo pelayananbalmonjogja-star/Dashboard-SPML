@@ -21,20 +21,6 @@ const SITE_LIST = [
 // Nilai persentase per kondisi site.
 const SITE_KONDISI_VALUE = { Baik: 100, Rusak: 75 };
 
-// Label kategori "Bukti Dukung" (dipakai untuk menampilkan ringkasan di mini-list).
-const BUKTI_KATEGORI_LABEL = {
-  kpi: 'Capaian PK',
-  operasional: 'Monitoring SMFR',
-  primaaksi: 'PrimaAksi',
-  survey: 'Survey',
-  tamu: 'Tamu Pelayanan',
-  isr: 'ISR',
-  spp: 'SPP BHP',
-  pelayanan: 'Realisasi Kegiatan SPML',
-  kegiatan: 'Kegiatan',
-  catatan: 'Catatan'
-};
-
 const InputApp = {
   initialized: false,
 
@@ -100,30 +86,28 @@ const InputApp = {
       formId: 'formPelayanan',
       collection: 'pelayanan',
       tahunId: 'pelayananTahun', bulanId: 'pelayananBulan',
-      fields: ['jenis', 'target', 'capaian'],
+      fields: ['jenis', 'target', 'capaian', 'link'],
       listId: 'pelayananList',
-      rowLabel: (d) => `${d.jenis} — ${d.capaian}/${d.target}`
+      rowLabel: (d) => `${d.jenis} — ${d.capaian}/${d.target}${d.link ? ' 🔗' : ''}`
     });
 
     this.setupMultiForm({
       formId: 'formKegiatan',
       collection: 'kegiatan',
       tahunId: 'kegiatanTahun', bulanId: 'kegiatanBulan',
-      fields: ['tanggalMulai', 'tanggalSelesai', 'judul', 'keterangan'],
+      fields: ['tanggalMulai', 'tanggalSelesai', 'judul', 'keterangan', 'link'],
       listId: 'kegiatanList',
-      rowLabel: (d) => `${d.tanggalMulai || ''} s.d ${d.tanggalSelesai || ''} — ${d.judul}`
+      rowLabel: (d) => `${d.tanggalMulai || ''} s.d ${d.tanggalSelesai || ''} — ${d.judul}${d.link ? ' 🔗' : ''}`
     });
 
     this.setupMultiForm({
       formId: 'formCatatan',
       collection: 'catatan',
       tahunId: 'catatanTahun', bulanId: 'catatanBulan',
-      fields: ['minggu', 'isi'],
+      fields: ['tanggal', 'keterangan'],
       listId: 'catatanList',
-      rowLabel: (d) => `${d.minggu} — ${d.isi}`
+      rowLabel: (d) => `${d.tanggal || '-'} — ${d.keterangan}`
     });
-
-    this.setupBuktiDukungForm();
   },
 
   setupTabs() {
@@ -492,228 +476,6 @@ const InputApp = {
     });
   },
 
-  /**
-   * Form khusus untuk tab "Bukti Dukung": mirip setupMultiForm, tapi dengan
-   * dukungan upload file ke Firebase Storage (opsional). Kalau admin pilih
-   * file, file diunggah dulu ke Storage lalu URL-nya otomatis dipakai
-   * sebagai "link". Kalau tidak pilih file, admin boleh isi link manual saja.
-   */
-  setupBuktiDukungForm() {
-    const formId = 'formBuktiDukung';
-    const collection = 'buktidukung';
-    const fields = ['kategori', 'judul', 'link', 'keterangan'];
-
-    const form = document.getElementById(formId);
-    const tahunEl = document.getElementById('buktiDukungTahun');
-    const bulanEl = document.getElementById('buktiDukungBulan');
-    const listEl = document.getElementById('buktiDukungList');
-    const fileEl = document.getElementById('formBuktiDukung_file');
-    const fileCurrentEl = document.getElementById('buktiDukungFileCurrent');
-    const linkEl = document.getElementById('formBuktiDukung_link');
-    const statusEl = document.getElementById('buktiDukungStatus');
-    const progressWrap = document.getElementById('buktiDukungProgress');
-    const progressFill = document.getElementById('buktiDukungProgressFill');
-    const progressLabel = document.getElementById('buktiDukungProgressLabel');
-    const submitBtn = document.getElementById('btnBuktiDukungSubmit');
-    const cancelBtn = document.getElementById('btnBuktiDukungCancelEdit');
-    if (!form || !tahunEl || !bulanEl || !listEl) return;
-
-    let editingId = null;
-    let editingRow = null;
-
-    const resetForm = () => {
-      editingId = null;
-      editingRow = null;
-      fields.forEach(f => {
-        const el = document.getElementById(`${formId}_${f}`);
-        if (el) el.value = '';
-      });
-      if (fileEl) fileEl.value = '';
-      if (fileCurrentEl) fileCurrentEl.innerHTML = '';
-      if (submitBtn) submitBtn.textContent = 'Tambah Data';
-      if (cancelBtn) cancelBtn.style.display = 'none';
-    };
-
-    const renderList = async () => {
-      const tahun = tahunEl.value.trim();
-      const bulan = bulanEl.value;
-      if (!tahun || !bulan) { listEl.innerHTML = ''; return; }
-
-      try {
-        const snap = await db.collection(collection)
-          .where('tahun', '==', String(tahun))
-          .where('bulan', '==', bulan)
-          .get();
-
-        const rows = [];
-        snap.forEach(doc => rows.push({ id: doc.id, ...doc.data() }));
-
-        if (rows.length === 0) {
-          listEl.innerHTML = `<div class="state-box" style="padding:16px 0;">Belum ada bukti dukung untuk periode ini.</div>`;
-          return;
-        }
-
-        listEl.innerHTML = rows.map(r => {
-          const label = `[${BUKTI_KATEGORI_LABEL[r.kategori] || r.kategori}] ${r.judul || ''}`;
-          const fileTag = r.storagePath ? ' <i class="fa-solid fa-paperclip" title="Ada file terlampir"></i>' : (r.link ? ' <i class="fa-solid fa-link" title="Link eksternal"></i>' : '');
-          return `
-          <div class="mini-row" data-id="${r.id}">
-            <span>${Utils.escape(label)}${fileTag}</span>
-            <span class="mini-row-actions">
-              <button type="button" class="btn-icon btn-edit" title="Edit"><i class="fa-solid fa-pen"></i></button>
-              <button type="button" class="btn-icon btn-delete" title="Hapus"><i class="fa-solid fa-trash"></i></button>
-            </span>
-          </div>`;
-        }).join('');
-
-        listEl.querySelectorAll('.btn-delete').forEach(btn => {
-          btn.addEventListener('click', async (e) => {
-            const rowEl = e.target.closest('.mini-row');
-            if (!rowEl) return;
-            const id = rowEl.dataset.id;
-            const row = rows.find(r => r.id === id);
-            if (!confirm('Hapus bukti dukung ini?')) return;
-            try {
-              if (row && row.storagePath && storage) {
-                await storage.ref(row.storagePath).delete().catch(err => console.warn('Gagal hapus file di Storage (dilanjutkan hapus data):', err));
-              }
-              await db.collection(collection).doc(id).delete();
-              if (editingId === id) resetForm();
-              renderList();
-            } catch (err) {
-              console.error(err);
-              alert('Gagal menghapus: ' + err.message);
-            }
-          });
-        });
-
-        listEl.querySelectorAll('.btn-edit').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            const rowEl = e.target.closest('.mini-row');
-            if (!rowEl) return;
-            const id = rowEl.dataset.id;
-            const row = rows.find(r => r.id === id);
-            editingId = id;
-            editingRow = row;
-            fields.forEach(f => {
-              const el = document.getElementById(`${formId}_${f}`);
-              if (el) el.value = row[f] !== undefined ? row[f] : '';
-            });
-            if (fileEl) fileEl.value = '';
-            if (fileCurrentEl) {
-              fileCurrentEl.innerHTML = row.storagePath
-                ? `File saat ini: <a href="${Utils.escape(row.link)}" target="_blank" rel="noopener">${Utils.escape(row.fileName || 'lihat file')}</a> <button type="button" class="btn-icon btn-delete" id="btnBuktiDukungRemoveFile" title="Hapus file ini">Hapus file</button>`
-                : '';
-              const rmBtn = document.getElementById('btnBuktiDukungRemoveFile');
-              if (rmBtn) rmBtn.addEventListener('click', async () => {
-                if (!confirm('Hapus file terlampir dari bukti dukung ini?')) return;
-                try {
-                  if (row.storagePath && storage) await storage.ref(row.storagePath).delete().catch(() => {});
-                  await db.collection(collection).doc(id).set({ link: '', storagePath: '', fileName: '' }, { merge: true });
-                  editingRow.storagePath = ''; editingRow.link = ''; editingRow.fileName = '';
-                  if (linkEl) linkEl.value = '';
-                  fileCurrentEl.innerHTML = '';
-                  renderList();
-                } catch (err) {
-                  console.error(err);
-                  alert('Gagal menghapus file: ' + err.message);
-                }
-              });
-            }
-            if (submitBtn) submitBtn.textContent = 'Update Data';
-            if (cancelBtn) cancelBtn.style.display = 'inline-block';
-            form.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          });
-        });
-      } catch (err) {
-        console.error('Gagal merender list bukti dukung:', err);
-      }
-    };
-
-    tahunEl.addEventListener('change', renderList);
-    bulanEl.addEventListener('change', renderList);
-    renderList();
-
-    if (cancelBtn) cancelBtn.addEventListener('click', resetForm);
-
-    /** Upload file ke Firebase Storage, mengembalikan {url, path, name}. Menampilkan progress bar. */
-    const uploadFile = (file, tahun, bulan) => new Promise((resolve, reject) => {
-      if (!storage) {
-        reject(new Error('Firebase Storage belum aktif. Aktifkan dulu di Firebase Console (lihat README), lalu isi ulang firebase-config.js jika perlu.'));
-        return;
-      }
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const path = `buktidukung/${tahun}_${bulan}/${Date.now()}_${safeName}`;
-      const task = storage.ref(path).put(file);
-
-      progressWrap.style.display = 'flex';
-      progressFill.style.width = '0%';
-      progressLabel.textContent = 'Mengunggah 0%';
-
-      task.on('state_changed', (snap) => {
-        const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
-        progressFill.style.width = pct + '%';
-        progressLabel.textContent = `Mengunggah ${pct}%`;
-      }, (err) => {
-        progressWrap.style.display = 'none';
-        reject(err);
-      }, async () => {
-        try {
-          const url = await task.snapshot.ref.getDownloadURL();
-          progressWrap.style.display = 'none';
-          resolve({ url, path, name: file.name });
-        } catch (err) {
-          progressWrap.style.display = 'none';
-          reject(err);
-        }
-      });
-    });
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const tahun = tahunEl.value.trim();
-      const bulan = bulanEl.value;
-      if (!tahun || !bulan) return alert('Isi Tahun dan Bulan dulu.');
-
-      const judulEl = document.getElementById(`${formId}_judul`);
-      if (!judulEl || !judulEl.value.trim()) return alert('Isi Judul Bukti dulu.');
-
-      const payload = { tahun: String(tahun), bulan };
-      fields.forEach(f => {
-        const el = document.getElementById(`${formId}_${f}`);
-        if (el) payload[f] = el.value;
-      });
-
-      if (statusEl) { statusEl.textContent = 'Menyimpan...'; statusEl.className = 'form-status'; }
-      if (submitBtn) submitBtn.disabled = true;
-
-      try {
-        const file = fileEl && fileEl.files && fileEl.files[0];
-        if (file) {
-          const uploaded = await uploadFile(file, tahun, bulan);
-          payload.link = uploaded.url;
-          payload.storagePath = uploaded.path;
-          payload.fileName = uploaded.name;
-        }
-
-        if (editingId) {
-          await db.collection(collection).doc(editingId).set(payload, { merge: true });
-        } else {
-          await db.collection(collection).add(payload);
-        }
-        await upsertPeriode(tahun, bulan);
-
-        if (statusEl) { statusEl.textContent = '✅ Bukti dukung tersimpan.'; statusEl.className = 'form-status success'; }
-        resetForm();
-        renderList();
-      } catch (err) {
-        console.error(err);
-        if (statusEl) { statusEl.textContent = '⚠ Gagal menyimpan: ' + err.message; statusEl.className = 'form-status error'; }
-      } finally {
-        if (submitBtn) submitBtn.disabled = false;
-      }
-    });
-  },
 };
 
 // --- PENGAMAN LOCK DOM LOADING ---

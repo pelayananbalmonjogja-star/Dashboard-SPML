@@ -14,34 +14,17 @@
 
 const TARGET_OPERASIONAL = 85; // target garis acuan gauge Operasional (%)
 
-// Label & ikon tampilan untuk tiap kategori "Bukti Dukung" (harus sinkron dengan
-// pilihan "Kategori" di form Bukti Dukung pada halaman Data Bulanan / input.html).
-const BUKTI_KATEGORI = {
-  kpi: { label: 'Capaian Perjanjian Kinerja', icon: 'fa-gauge' },
-  operasional: { label: 'Monitoring Perangkat SMFR', icon: 'fa-tower-broadcast' },
-  primaaksi: { label: 'PrimaAksi — Verifikasi Site ISR', icon: 'fa-chart-pie' },
-  survey: { label: 'Survey Kepuasan Pelayanan Publik', icon: 'fa-star' },
-  tamu: { label: 'Jumlah Tamu Pelayanan', icon: 'fa-user-group' },
-  isr: { label: 'Penerbitan & Pencabutan ISR', icon: 'fa-file-shield' },
-  spp: { label: 'Penerbitan SPP BHP', icon: 'fa-file-invoice-dollar' },
-  pelayanan: { label: 'Realisasi Kegiatan SPML', icon: 'fa-people-group' },
-  kegiatan: { label: 'Kegiatan', icon: 'fa-calendar-check' },
-  catatan: { label: 'Catatan', icon: 'fa-note-sticky' }
-};
-
 
 
 const Dashboard = {
 
-  state: { tahun: '', bulan: '', dataTable: null, buktiDukung: [] },
+  state: { tahun: '', bulan: '', dataTable: null },
 
 
 
   async init() {
 
     this.setupSidebarToggle();
-
-    this.setupBuktiDrawer();
 
 
 
@@ -140,106 +123,6 @@ const Dashboard = {
     });
 
   },
-
-  /* ---------------- BUKTI DUKUNG (drawer detail per kategori sub-data) ---------------- */
-
-  setupBuktiDrawer() {
-
-    const drawer = document.getElementById('buktiDrawer');
-    const backdrop = document.getElementById('buktiBackdrop');
-    const closeBtn = document.getElementById('buktiDrawerClose');
-    if (!drawer || !backdrop) return;
-
-    const close = () => {
-      drawer.classList.remove('open');
-      backdrop.classList.remove('open');
-    };
-
-    closeBtn?.addEventListener('click', close);
-    backdrop.addEventListener('click', close);
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
-
-    // Delegasi klik: semua tombol pemicu (di sidebar & di header tiap panel)
-    // punya atribut data-kategori yang sama, jadi cukup satu listener global.
-    document.addEventListener('click', (e) => {
-      const trigger = e.target.closest('.pk-nav-bukti, .pk-bukti-btn');
-      if (!trigger) return;
-      e.preventDefault();
-      e.stopPropagation();
-      this.openBuktiDrawer(trigger.dataset.kategori);
-    });
-
-  },
-
-  openBuktiDrawer(kategori) {
-
-    const drawer = document.getElementById('buktiDrawer');
-    const backdrop = document.getElementById('buktiBackdrop');
-    const titleEl = document.getElementById('buktiDrawerTitle');
-    const subEl = document.getElementById('buktiDrawerSub');
-    const bodyEl = document.getElementById('buktiDrawerBody');
-    if (!drawer || !bodyEl) return;
-
-    const meta = BUKTI_KATEGORI[kategori] || { label: 'Data', icon: 'fa-folder-open' };
-    titleEl.textContent = meta.label;
-    subEl.textContent = this.state.bulan && this.state.tahun ? `Periode ${this.state.bulan} ${this.state.tahun}` : '';
-
-    const items = (this.state.buktiDukung || []).filter(b => b.kategori === kategori);
-
-    if (items.length === 0) {
-      bodyEl.innerHTML = `
-        <div class="pk-drawer-empty">
-          <i class="fa-regular fa-folder-open"></i>
-          <strong>Belum ada bukti dukung</strong>
-          <p>Bukti dukung untuk "${Utils.escape(meta.label)}" pada periode ini belum diinput.<br>Tambahkan lewat halaman Data Bulanan &rarr; tab "Bukti Dukung".</p>
-        </div>`;
-    } else {
-      bodyEl.innerHTML = items.map(b => {
-        const hasLink = !!(b.link && String(b.link).trim());
-        const isFile = !!(b.storagePath && String(b.storagePath).trim());
-        const tag = hasLink ? 'a' : 'div';
-        const attrs = hasLink ? `href="${Utils.escape(b.link)}" target="_blank" rel="noopener"` : '';
-        const icon = isFile ? 'fa-paperclip' : (hasLink ? 'fa-link' : meta.icon);
-        const linkLine = isFile
-          ? `<div class="pk-bukti-item-link"><i class="fa-solid fa-file"></i> ${Utils.escape(b.fileName || 'Lihat file terlampir')}</div>`
-          : (hasLink ? `<div class="pk-bukti-item-link">${Utils.escape(b.link)}</div>` : '');
-        return `
-          <${tag} class="pk-bukti-item ${hasLink ? '' : 'pk-bukti-item-nolink'}" ${attrs}>
-            <div class="pk-bukti-item-head">
-              <div class="pk-bukti-item-icon"><i class="fa-solid ${icon}"></i></div>
-              <div style="flex:1; min-width:0;">
-                <div class="pk-bukti-item-title">${Utils.escape(b.judul || 'Tanpa judul')}</div>
-                ${linkLine}
-              </div>
-              ${hasLink ? `<div class="pk-bukti-item-open"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>` : ''}
-            </div>
-            ${b.keterangan ? `<div class="pk-bukti-item-ket">${Utils.escape(b.keterangan)}</div>` : ''}
-          </${tag}>`;
-      }).join('');
-    }
-
-    drawer.classList.add('open');
-    backdrop.classList.add('open');
-  },
-
-  /** Tandai tombol paperclip di sidebar (dan beri jumlah) untuk kategori yang sudah punya bukti dukung. */
-  renderBuktiBadges() {
-    const counts = {};
-    (this.state.buktiDukung || []).forEach(b => {
-      counts[b.kategori] = (counts[b.kategori] || 0) + 1;
-    });
-    document.querySelectorAll('.pk-nav-bukti[data-kategori]').forEach(btn => {
-      const n = counts[btn.dataset.kategori] || 0;
-      btn.classList.toggle('has-data', n > 0);
-      btn.setAttribute('title', n > 0 ? `${n} bukti dukung tersedia` : btn.getAttribute('title'));
-    });
-    document.querySelectorAll('.pk-bukti-btn[data-kategori]').forEach(btn => {
-      const n = counts[btn.dataset.kategori] || 0;
-      btn.classList.toggle('has-data', n > 0);
-    });
-  },
-
-
 
   showLoading(show) {
 
@@ -367,7 +250,7 @@ const Dashboard = {
 
 
 
-      const [pkSnap, survei, primaaksiSnap, monitoringSnap, pelayananSnap, kegiatanSnap, tamuSnap, sppSnap, isrTerbitSnap, catatanSnap, buktiDukungSnap] = await Promise.all([
+      const [pkSnap, survei, primaaksiSnap, monitoringSnap, pelayananSnap, kegiatanSnap, tamuSnap, sppSnap, isrTerbitSnap, catatanSnap] = await Promise.all([
 
         db.collection('pk').doc(id).get(),
 
@@ -387,9 +270,7 @@ const Dashboard = {
 
         db.collection('isrTerbit').doc(id).get(),
 
-        db.collection('catatan').where('tahun', '==', tahun).where('bulan', '==', bulan).get(),
-
-        db.collection('buktidukung').where('tahun', '==', tahun).where('bulan', '==', bulan).get()
+        db.collection('catatan').where('tahun', '==', tahun).where('bulan', '==', bulan).get()
 
       ]);
 
@@ -413,15 +294,9 @@ const Dashboard = {
 
       const catatan = []; catatanSnap.forEach(d => catatan.push({ id: d.id, ...d.data() }));
 
-      const buktiDukung = []; buktiDukungSnap.forEach(d => buktiDukung.push({ id: d.id, ...d.data() }));
-
-      this.state.buktiDukung = buktiDukung;
-
 
 
       this.renderAll({ pk, survei, primaaksi, monitoring, pelayanan, kegiatan, tamu, spp, isrTerbit, catatan });
-
-      this.renderBuktiBadges();
 
     } catch (err) {
 
@@ -962,7 +837,7 @@ const Dashboard = {
 
           <div class="pk-pelayanan-value" style="color:${color}">${capaian}</div>
 
-          <div class="pk-pelayanan-label">${Utils.escape(r.jenis)}</div>
+          <div class="pk-pelayanan-label">${Utils.escape(r.jenis)}${r.link ? ` <a href="${Utils.escape(r.link)}" target="_blank" rel="noopener" class="pk-pelayanan-doclink" title="Buka dokumen ${Utils.escape(r.jenis)}"><i class="fa-solid fa-link"></i></a>` : ''}</div>
 
           <div class="pk-pelayanan-target">Target: ${target}</div>
 
@@ -986,6 +861,22 @@ const Dashboard = {
 
   /* ---------------- LOG KEGIATAN (DataTable) ---------------- */
 
+  // Palet warna & ikon per jenis kegiatan (dicocokkan dari kata kunci judul, dengan fallback bergilir).
+  // Dipakai bareng oleh tabel kegiatan & kalender kegiatan supaya warnanya konsisten.
+  KEGIATAN_PALETTE: ['#0B2A5B', '#F5A623', '#27AE60', '#8E5CF7', '#2F80ED'],
+  KEGIATAN_THEME_RULES: [
+    { test: /unar/i, icon: 'fa-bullhorn', color: '#0B2A5B', label: 'UNAR' },
+    { test: /mots/i, icon: 'fa-tower-broadcast', color: '#F5A623', label: 'MOTS' },
+    { test: /inspeksi\s*rutin/i, icon: 'fa-shield-halved', color: '#27AE60', label: 'Inspeksi Rutin' },
+    { test: /inspeksi\s*insidentil/i, icon: 'fa-magnifying-glass', color: '#8E5CF7', label: 'Inspeksi Insidentil' },
+    { test: /klarifikasi/i, icon: 'fa-file-circle-check', color: '#2F80ED', label: 'Klarifikasi' }
+  ],
+  kegiatanTheme(judul, idx) {
+    const found = this.KEGIATAN_THEME_RULES.find(t => t.test.test(judul || ''));
+    if (found) return found;
+    return { icon: 'fa-calendar-check', color: this.KEGIATAN_PALETTE[idx % this.KEGIATAN_PALETTE.length], label: 'Lainnya' };
+  },
+
   renderKegiatanLog(rows) {
 
     const wrap = document.getElementById('kegiatanWrap');
@@ -996,47 +887,19 @@ const Dashboard = {
 
       wrap.innerHTML = `<div class="state-box">Belum ada data kegiatan untuk periode ini.</div>`;
 
+      this.renderKegiatanCalendar([]);
+
       return;
 
     }
 
-    const columns = ['tanggalMulai', 'tanggalSelesai', 'judul', 'keterangan'];
+    const columns = ['tanggalMulai', 'tanggalSelesai', 'judul', 'keterangan', 'link'];
 
-    const headerLabels = { tanggalMulai: 'Tanggal Mulai', tanggalSelesai: 'Tanggal Selesai', judul: 'Judul', keterangan: 'Keterangan' };
+    const headerLabels = { tanggalMulai: 'Tanggal Mulai', tanggalSelesai: 'Tanggal Selesai', judul: 'Judul', keterangan: 'Keterangan', link: 'Dokumen' };
 
-    const headerIcons = { tanggalMulai: 'fa-calendar-days', tanggalSelesai: 'fa-calendar-check', judul: 'fa-bullhorn', keterangan: 'fa-comment-dots' };
+    const headerIcons = { tanggalMulai: 'fa-calendar-days', tanggalSelesai: 'fa-calendar-check', judul: 'fa-bullhorn', keterangan: 'fa-comment-dots', link: 'fa-link' };
 
     const thead = columns.map(c => `<th><i class="fa-solid ${headerIcons[c]} pk-th-icon"></i>${headerLabels[c].toUpperCase()}</th>`).join('');
-
-
-
-    // Palet warna & ikon per jenis kegiatan (dicocokkan dari kata kunci judul, dengan fallback bergilir)
-
-    const palette = ['#0B2A5B', '#F5A623', '#27AE60', '#8E5CF7', '#2F80ED'];
-
-    const themeRules = [
-
-      { test: /unar/i, icon: 'fa-bullhorn', color: '#0B2A5B' },
-
-      { test: /mots/i, icon: 'fa-tower-broadcast', color: '#F5A623' },
-
-      { test: /inspeksi\s*rutin/i, icon: 'fa-shield-halved', color: '#27AE60' },
-
-      { test: /inspeksi\s*insidentil/i, icon: 'fa-magnifying-glass', color: '#8E5CF7' },
-
-      { test: /klarifikasi/i, icon: 'fa-file-circle-check', color: '#2F80ED' }
-
-    ];
-
-    const getTheme = (judul, idx) => {
-
-      const found = themeRules.find(t => t.test.test(judul || ''));
-
-      if (found) return found;
-
-      return { icon: 'fa-calendar-check', color: palette[idx % palette.length] };
-
-    };
 
 
 
@@ -1046,11 +909,15 @@ const Dashboard = {
 
     const tbody = rows.map((r, idx) => {
 
-      const theme = getTheme(r.judul, idx);
+      const theme = this.kegiatanTheme(r.judul, idx);
 
       const judulCell = `<span class="pk-keg-judul"><i class="fa-solid ${theme.icon}" style="color:${theme.color};"></i>${Utils.escape(r.judul)}</span>`;
 
       const ketCell = `<span class="pk-keg-ket"><i class="fa-solid fa-file-lines" style="color:${theme.color};"></i>${Utils.escape(r.keterangan)}</span>`;
+
+      const linkCell = r.link
+        ? `<a class="pk-keg-link" href="${Utils.escape(r.link)}" target="_blank" rel="noopener" style="color:${theme.color};"><i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat</a>`
+        : `<span class="pk-keg-link-empty">—</span>`;
 
       return `<tr style="--row-tint:${theme.color}1a;">` +
 
@@ -1061,6 +928,8 @@ const Dashboard = {
         `<td>${judulCell}</td>` +
 
         `<td>${ketCell}</td>` +
+
+        `<td>${linkCell}</td>` +
 
       `</tr>`;
 
@@ -1094,6 +963,8 @@ const Dashboard = {
 
 
 
+    this.renderKegiatanCalendar(rows);
+
     // Bungkus input pencarian dengan ikon kaca pembesar
 
     const $filterInput = $(wrap).find('.dataTables_filter input');
@@ -1104,7 +975,120 @@ const Dashboard = {
 
   },
 
+  /* ---------------- KALENDER KEGIATAN ---------------- */
 
+  /** Parse "YYYY-MM-DD" jadi Date lokal jam 00:00 (hindari geser tanggal karena timezone). */
+  parseTanggalLokal(str) {
+    if (!str || typeof str !== 'string') return null;
+    const parts = str.split('-').map(Number);
+    if (parts.length !== 3 || parts.some(n => Number.isNaN(n))) return null;
+    const [y, m, d] = parts;
+    return new Date(y, m - 1, d);
+  },
+
+  /** Render kalender bulanan yang menampilkan titik kegiatan sesuai tabel Rencana Kegiatan periode aktif. */
+  renderKegiatanCalendar(rows) {
+    this.state.kegiatanCalRows = rows || [];
+    // Reset filter ke "Semua Kategori" tiap kali data periode berganti/dimuat ulang.
+    this.state.kegiatanCalFilter = 'all';
+    this.renderKegiatanCalendarBody();
+  },
+
+  /** Render ulang isi kalender (grid + legenda) berdasarkan cache baris & filter kategori aktif, tanpa fetch ulang. */
+  renderKegiatanCalendarBody() {
+    const wrap = document.getElementById('kegiatanCalendar');
+    if (!wrap) return;
+
+    const rows = this.state.kegiatanCalRows || [];
+    const tahun = Number(this.state.tahun);
+    const bulanNama = this.state.bulan;
+    const monthIdx = (typeof BULAN_ORDER !== 'undefined' && Array.isArray(BULAN_ORDER)) ? BULAN_ORDER.indexOf(bulanNama) : -1;
+
+    if (!tahun || monthIdx === -1) {
+      wrap.innerHTML = `<div class="state-box">Pilih periode untuk menampilkan kalender.</div>`;
+      return;
+    }
+
+    // Siapkan semua event dulu (belum difilter) untuk membangun daftar kategori pada dropdown.
+    const allEvents = rows.map((r, idx) => {
+      const start = this.parseTanggalLokal(r.tanggalMulai);
+      const end = this.parseTanggalLokal(r.tanggalSelesai) || start;
+      return { ...r, start, end, theme: this.kegiatanTheme(r.judul, idx) };
+    }).filter(e => e.start);
+
+    const categories = [...new Set(allEvents.map(e => e.theme.label))].sort((a, b) => a.localeCompare(b));
+    const activeFilter = (this.state.kegiatanCalFilter && (this.state.kegiatanCalFilter === 'all' || categories.includes(this.state.kegiatanCalFilter)))
+      ? this.state.kegiatanCalFilter : 'all';
+    this.state.kegiatanCalFilter = activeFilter;
+
+    const events = activeFilter === 'all' ? allEvents : allEvents.filter(e => e.theme.label === activeFilter);
+
+    const firstOfMonth = new Date(tahun, monthIdx, 1);
+    const daysInMonth = new Date(tahun, monthIdx + 1, 0).getDate();
+    // Senin sebagai kolom pertama (kebiasaan kalender Indonesia).
+    const startOffset = (firstOfMonth.getDay() + 6) % 7;
+    const dayNames = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+
+    const cells = [];
+    for (let i = 0; i < startOffset; i++) cells.push(null);
+    for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+    while (cells.length % 7 !== 0) cells.push(null);
+
+    const today = new Date();
+    const isSameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+    const cellsHtml = cells.map(d => {
+      if (!d) return `<div class="pk-cal-cell pk-cal-cell-empty"></div>`;
+      const dateObj = new Date(tahun, monthIdx, d);
+      const dayEvents = events.filter(e => dateObj >= e.start && dateObj <= e.end);
+      const isToday = isSameDay(dateObj, today);
+      const dots = dayEvents.slice(0, 3).map(e => `<span class="pk-cal-dot" style="background:${e.theme.color}"></span>`).join('');
+      const more = dayEvents.length > 3 ? `<span class="pk-cal-more">+${dayEvents.length - 3}</span>` : '';
+      const titleAttr = dayEvents.length ? Utils.escape(dayEvents.map(e => e.judul).join(', ')) : '';
+      return `<div class="pk-cal-cell ${isToday ? 'pk-cal-today' : ''} ${dayEvents.length ? 'pk-cal-has-event' : ''}" title="${titleAttr}">
+        <span class="pk-cal-daynum">${d}</span>
+        <div class="pk-cal-dots">${dots}${more}</div>
+      </div>`;
+    }).join('');
+
+    const legendHtml = events.length
+      ? events.map(e => {
+          const rangeLabel = (e.tanggalSelesai && e.tanggalSelesai !== e.tanggalMulai)
+            ? `${Utils.escape(e.tanggalMulai || '')} s.d ${Utils.escape(e.tanggalSelesai || '')}`
+            : Utils.escape(e.tanggalMulai || '');
+          return `
+          <div class="pk-cal-legend-item">
+            <span class="pk-cal-dot" style="background:${e.theme.color}"></span>
+            <span class="pk-cal-legend-text"><strong>${Utils.escape(e.judul || '')}</strong><small>${rangeLabel}</small></span>
+            ${e.link ? `<a href="${Utils.escape(e.link)}" target="_blank" rel="noopener" class="pk-cal-legend-link" title="Buka dokumen"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>` : ''}
+          </div>`;
+        }).join('')
+      : `<div class="pk-cal-legend-empty">${allEvents.length ? 'Tidak ada kegiatan untuk kategori ini.' : 'Belum ada kegiatan berjadwal pada periode ini.'}</div>`;
+
+    const filterHtml = categories.length ? `
+      <select id="kegiatanCalFilter" class="pk-cal-filter">
+        <option value="all" ${activeFilter === 'all' ? 'selected' : ''}>Semua Kategori</option>
+        ${categories.map(c => `<option value="${Utils.escape(c)}" ${activeFilter === c ? 'selected' : ''}>${Utils.escape(c)}</option>`).join('')}
+      </select>` : '';
+
+    wrap.innerHTML = `
+      <div class="pk-cal-head">
+        <div class="pk-cal-title"><i class="fa-solid fa-calendar-days"></i> Kalender Kegiatan — ${Utils.escape(bulanNama)} ${tahun}</div>
+        ${filterHtml}
+      </div>
+      <div class="pk-cal-grid pk-cal-grid-head">${dayNames.map(n => `<div class="pk-cal-dayname">${n}</div>`).join('')}</div>
+      <div class="pk-cal-grid">${cellsHtml}</div>
+      <div class="pk-cal-legend">${legendHtml}</div>
+    `;
+
+    const filterEl = document.getElementById('kegiatanCalFilter');
+    if (filterEl) {
+      filterEl.addEventListener('change', () => {
+        this.state.kegiatanCalFilter = filterEl.value;
+        this.renderKegiatanCalendarBody();
+      });
+    }
+  },
 
   /* ---------------- CATATAN (read-only, diisi dari halaman Input) ---------------- */
 
@@ -1122,17 +1106,15 @@ const Dashboard = {
 
     }
 
-    const mingguOrder = ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'];
-
-    const sorted = [...rows].sort((a, b) => mingguOrder.indexOf(a.minggu) - mingguOrder.indexOf(b.minggu));
+    const sorted = [...rows].sort((a, b) => (a.tanggal || '').localeCompare(b.tanggal || ''));
 
     const body = sorted.map(r => `
 
       <tr>
 
-        <td class="pk-notes-week"><i class="fa-regular fa-calendar"></i>${Utils.escape(r.minggu || '-')}</td>
+        <td class="pk-notes-isi">${Utils.escape(r.keterangan || '').replace(/\n/g, '<br>')}</td>
 
-        <td class="pk-notes-isi">${Utils.escape(r.isi || '').replace(/\n/g, '<br>')}</td>
+        <td class="pk-notes-week"><i class="fa-regular fa-calendar"></i>${Utils.escape(r.tanggal || '-')}</td>
 
       </tr>`).join('');
 
@@ -1140,7 +1122,7 @@ const Dashboard = {
 
       <table class="pk-notes-table">
 
-        <thead><tr><th style="width:16%;">Minggu</th><th>Catatan</th></tr></thead>
+        <thead><tr><th>Keterangan</th><th style="width:18%;">Tanggal</th></tr></thead>
 
         <tbody>${body}</tbody>
 
