@@ -10,7 +10,7 @@ const Charts = {
   gauges: {}, // registry of mini/multi gauge instances, keyed by canvasId
 
   colors: {
-    navy: '#0B2A5B',
+    navy: '#000633',
     green: '#16A34A',
     orange: '#F59E0B',
     red: '#C0392B',
@@ -59,7 +59,7 @@ const Charts = {
           const y = chartArea.bottom - (fontSize < 20 ? 2 : 6);
           ctx.save();
           ctx.textAlign = 'center';
-          ctx.fillStyle = '#0B2A5B';
+          ctx.fillStyle = '#000633';
           ctx.font = `700 ${fontSize}px Plus Jakarta Sans, sans-serif`;
           ctx.fillText(pct.toFixed(2) + '%', x, y);
           if (centerLabel) {
@@ -115,7 +115,7 @@ const Charts = {
       data: {
         labels,
         datasets: [
-          { label: 'Target', data: targetData, backgroundColor: '#F5B400', borderRadius: 6, maxBarThickness: 26 },
+          { label: 'Target', data: targetData, backgroundColor: '#FFBE1D', borderRadius: 6, maxBarThickness: 26 },
           { label: 'Capaian', data: capaianData, backgroundColor: this.colors.navy, borderRadius: 6, maxBarThickness: 26 }
         ]
       },

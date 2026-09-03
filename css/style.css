@@ -1,16 +1,16 @@
 /* =========================================================
    PK DASHBOARD - STYLESHEET
-   Palet: Biru Navy (#0B2A5B) - Kuning Emas (#F5B400) - Putih (#FFFFFF)
+   Palet: Biru Navy (#000633) - Kuning Emas (#FFBE1D) - Putih (#FFFFFF)
           Hijau (#40D872) & Merah (#C0392B) tetap dipakai khusus
           untuk status baik/buruk (semantik), bukan warna brand.
    ========================================================= */
 
 :root {
-  --navy: #0B2A5B;
-  --navy-light: #F5B400;
+  --navy: #000633;
+  --navy-light: #FFBE1D;
   --navy-dark: #061B3D;
   --green: #40D872;
-  --orange: #F5B400;
+  --orange: #FFBE1D;
   --red: #C0392B;
   --gray-bg: #FFF8E1;
   --page-bg-start: #FFFFFF;
@@ -801,7 +801,7 @@ footer {
   width: 170px; height: 170px;
   z-index: 0;
   pointer-events: none;
-  background: repeating-linear-gradient(45deg, #0B2A5B 0 10px, #F5B400 10px 20px);
+  background: repeating-linear-gradient(45deg, #000633 0 10px, #FFBE1D 10px 20px);
   opacity: 0.9;
 }
 .pk-body::before {
@@ -1070,7 +1070,7 @@ footer {
   border-radius: 999px; font-size: 11px; font-weight: 800;
 }
 .pk-pill-success { background: #27AE60; color: #fff; box-shadow: 0 3px 8px rgba(39,174,96,.35); }
-.pk-pill-warning { background: #F5B400; color: #6B4B00; }
+.pk-pill-warning { background: #FFBE1D; color: #6B4B00; }
 .pk-pill-danger { background: var(--navy); color: #fff; box-shadow: 0 3px 8px rgba(255, 0, 0,.3); }
 
 /* ---------- Rows / panels ---------- */
@@ -1117,7 +1117,7 @@ footer {
   mask-image: linear-gradient(225deg, #000 30%, transparent 70%);
   pointer-events: none;
 }
-.pk-panel--red h3 { background: linear-gradient(90deg, #0B2A5B, #061B3D); }
+.pk-panel--red h3 { background: linear-gradient(90deg, #000633, #061B3D); }
 .pk-panel--blue h3 { background: linear-gradient(90deg, #2F80ED, #1B5FC7); }
 .pk-panel--purple h3 { background: linear-gradient(90deg, #8E5CF7, #6E3AD6); }
 
@@ -1128,7 +1128,7 @@ footer {
   background: rgba(255,255,255,.95);
   font-size: 12px; flex-shrink: 0;
 }
-.pk-panel--red .pk-h3-badge { color: #0B2A5B; }
+.pk-panel--red .pk-h3-badge { color: #000633; }
 .pk-panel--blue .pk-h3-badge { color: #1B5FC7; }
 .pk-panel--purple .pk-h3-badge { color: #6E3AD6; }
 
@@ -1217,7 +1217,7 @@ footer {
   font-size: 12.5px; font-weight: 700; color: var(--navy); text-transform: uppercase;
   letter-spacing: .3px; margin-bottom: 10px; display: flex; align-items: center; gap: 7px;
 }
-.pk-survey-block-title i { color: #F5B400; }
+.pk-survey-block-title i { color: #FFBE1D; }
 .pk-survey-keterangan-pill {
   display: inline-flex; align-items: center; gap: 7px;
   background: #FFF1F3; color: var(--navy);
@@ -1409,7 +1409,7 @@ footer {
 .pk-notes-header {
   display: flex;
   align-items: center;
-  background: linear-gradient(90deg, #F5B400, #D89000);
+  background: linear-gradient(90deg, #FFBE1D, #D89000);
   color: #fff;
   border-radius: 10px;
   padding: 12px 20px;
@@ -1510,13 +1510,13 @@ footer {
   border: 1px solid var(--border); border-radius: 999px; padding: 8px 16px 8px 34px;
   font-size: 13px; min-width: 220px; outline: none; background: #fff;
 }
-.pk-kegiatan-toolbar .dataTables_filter input:focus { border-color: #0B2A5B; box-shadow: 0 0 0 3px rgba(11,42,91,.12); }
+.pk-kegiatan-toolbar .dataTables_filter input:focus { border-color: #000633; box-shadow: 0 0 0 3px rgba(0,6,51,.12); }
 .pk-search-wrap { position: relative; display: inline-flex; align-items: center; }
 .pk-search-icon { position: absolute; left: 13px; color: var(--navy); font-size: 12px; pointer-events: none; }
 
 .table-wrap #kegiatanTable { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 13px; }
 .table-wrap #kegiatanTable thead th {
-  background: linear-gradient(90deg, #0B2A5B, #061B3D);
+  background: linear-gradient(90deg, #000633, #061B3D);
   color: #fff; text-align: left; padding: 12px 14px;
   font-size: 11.5px; text-transform: uppercase; letter-spacing: .3px; font-weight: 700;
   position: relative; cursor: pointer; white-space: nowrap;
@@ -1624,7 +1624,7 @@ footer {
   cursor: pointer;
 }
 .pk-kegiatan-footer .dataTables_paginate .paginate_button.current {
-  background: linear-gradient(90deg, #0B2A5B, #061B3D) !important;
+  background: linear-gradient(90deg, #000633, #061B3D) !important;
   border-color: #061B3D !important; color: #fff !important;
 }
 .pk-kegiatan-footer .dataTables_paginate .paginate_button.disabled { opacity: .5; cursor: default; }

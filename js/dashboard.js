@@ -436,7 +436,7 @@ const Dashboard = {
 
     const fields = [
 
-      { key: 'Piutang', label: 'Pelayanan Piutang BHP', icon: 'fa-file-circle-check', color: '#0B2A5B' },
+      { key: 'Piutang', label: 'Pelayanan Piutang BHP', icon: 'fa-file-circle-check', color: '#000633' },
 
       { key: 'SOR', label: 'Penyelenggaraan Layanan SOR', icon: 'fa-id-card', color: '#F5A623' },
 
@@ -645,13 +645,13 @@ const Dashboard = {
 
           <div class="pk-survey-grid">
 
-            <div class="pk-survey-card" style="--card-color:#0B2A5B; background:linear-gradient(160deg,#0B2A5B22,#0B2A5B08);">
+            <div class="pk-survey-card" style="--card-color:#000633; background:linear-gradient(160deg,#00063322,#00063308);">
 
-              <div class="pk-survey-icon" style="background:#0B2A5B; color:#fff;"><i class="fa-solid fa-clipboard-check"></i></div>
+              <div class="pk-survey-icon" style="background:#000633; color:#fff;"><i class="fa-solid fa-clipboard-check"></i></div>
 
               <div class="pk-survey-label">IKM / IPKP</div>
 
-              <div class="pk-survey-value" style="color:#0B2A5B;">${ikm}</div>
+              <div class="pk-survey-value" style="color:#000633;">${ikm}</div>
 
               <div class="pk-survey-stars">${this.starsHtml(ikm, 4)}</div>
 
@@ -663,7 +663,7 @@ const Dashboard = {
 
               <div class="pk-survey-label">IIPP / IPAK</div>
 
-              <div class="pk-survey-value" style="color:#0B2A5B;">${ipak}</div>
+              <div class="pk-survey-value" style="color:#000633;">${ipak}</div>
 
               <div class="pk-survey-stars">${this.starsHtml(ipak, 10)}</div>
 
@@ -724,7 +724,7 @@ const Dashboard = {
     if (!trendHtml) trendHtml = `<span class="pk-tamu-strip-trend is-muted">dari bulan lalu</span>`;
 
     const items = [
-      { icon: 'fa-user-group', color: '#0B2A5B', value: total, label: 'Total Tamu', sub: trendHtml },
+      { icon: 'fa-user-group', color: '#000633', value: total, label: 'Total Tamu', sub: trendHtml },
       { icon: 'fa-tower-broadcast', color: '#F5722F', value: broadcast, label: 'Tamu Broadcast', sub: `<span class="pk-tamu-strip-sub" style="color:#F5722F">${pct(broadcast)}% dari total</span>` },
       { icon: 'fa-user-group', color: '#F5A623', value: nonBroadcast, label: 'Tamu Non Broadcast', sub: `<span class="pk-tamu-strip-sub" style="color:#F5A623">${pct(nonBroadcast)}% dari total</span>` },
       { icon: 'fa-globe', color: '#27AE60', value: online, label: 'Pelayanan Online', sub: `<span class="pk-tamu-strip-sub" style="color:#27AE60">${pct(online)}% dari total</span>` },
@@ -759,11 +759,11 @@ const Dashboard = {
     }
 
     const items = [
-      { color: '#0B2A5B', icon: 'fa-file-circle-check', value: terbit, label: 'ISR Terbit' },
+      { color: '#000633', icon: 'fa-file-circle-check', value: terbit, label: 'ISR Terbit' },
       { color: '#F5722F', icon: 'fa-file-circle-xmark', value: cabut, label: 'ISR Tercabut' },
       { color: '#2F80ED', icon: 'fa-calendar-check', value: annual, label: 'SPP Annual' },
       { color: '#F5A623', icon: 'fa-bell', value: reminder, label: 'SPP Reminder' },
-      { color: '#0B2A5B', icon: 'fa-file-circle-plus', value: baru, label: 'SPP New' },
+      { color: '#000633', icon: 'fa-file-circle-plus', value: baru, label: 'SPP New' },
       { color: '#F5722F', icon: 'fa-rotate', value: renewal, label: 'SPP Renewal' }
     ];
 
@@ -927,9 +927,9 @@ const Dashboard = {
 
   // Palet warna & ikon per jenis kegiatan (dicocokkan dari kata kunci judul, dengan fallback bergilir).
   // Dipakai bareng oleh tabel kegiatan & kalender kegiatan supaya warnanya konsisten.
-  KEGIATAN_PALETTE: ['#0B2A5B', '#F5A623', '#27AE60', '#8E5CF7', '#2F80ED'],
+  KEGIATAN_PALETTE: ['#000633', '#F5A623', '#27AE60', '#8E5CF7', '#2F80ED'],
   KEGIATAN_THEME_RULES: [
-    { test: /unar/i, icon: 'fa-bullhorn', color: '#0B2A5B', label: 'UNAR' },
+    { test: /unar/i, icon: 'fa-bullhorn', color: '#000633', label: 'UNAR' },
     { test: /mots/i, icon: 'fa-tower-broadcast', color: '#F5A623', label: 'MOTS' },
     { test: /inspeksi\s*rutin/i, icon: 'fa-shield-halved', color: '#27AE60', label: 'Inspeksi Rutin' },
     { test: /inspeksi\s*insidentil/i, icon: 'fa-magnifying-glass', color: '#8E5CF7', label: 'Inspeksi Insidentil' },
