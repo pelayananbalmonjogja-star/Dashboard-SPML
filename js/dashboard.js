@@ -442,9 +442,9 @@ const Dashboard = {
 
       { key: 'LKE', label: 'LKE Pembangunan ZI', icon: 'fa-shield-halved', color: '#2F80ED' },
 
-      { key: 'IKM', label: 'IKM / IPKP', scale: 'SKALA 4', icon: 'fa-star', color: '#27AE60' },
+      { key: 'IKM', label: 'IKM / IPKP', scale: 'SKALA 4', icon: 'fa-star', color: '#27AE60', noPercent: true },
 
-      { key: 'IPAK', label: 'IIPP / IPAK', scale: 'SKALA 10', icon: 'fa-heart', color: '#8E5CF7' },
+      { key: 'IPAK', label: 'IIPP / IPAK', scale: 'SKALA 10', icon: 'fa-heart', color: '#8E5CF7', noPercent: true },
 
       { key: 'PrimaAksi', label: 'PrimaAksi', icon: 'fa-bullseye', color: '#17B8C4' }
 
@@ -470,7 +470,7 @@ const Dashboard = {
 
             <div class="pk-kpi-icon" style="background:${f.color}; color:#fff; box-shadow:0 8px 18px -6px ${f.color};"><i class="fa-solid ${f.icon}"></i></div>
 
-            <div class="pk-kpi-value" style="color:${f.color};">${value}%</div>
+            <div class="pk-kpi-value" style="color:${f.color};">${value}${f.noPercent ? '' : '%'}</div>
 
             <div class="pk-kpi-label">${f.label}</div>
 
