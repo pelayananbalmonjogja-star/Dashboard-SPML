@@ -787,7 +787,15 @@ const Dashboard = {
 
     if (j.includes('unar')) return 'fa-graduation-cap';
 
+    if (j.includes('bimtek') || j.includes('sertifikasi') || j.includes('sosialisasi') || j.includes('ikran')) return 'fa-people-group';
+
+    if (j.includes('inspeksi')) return 'fa-magnifying-glass';
+
     if (j.includes('invoice') || j.includes('piutang')) return 'fa-file-invoice-dollar';
+
+    if (j.includes('maritim')) return 'fa-ship';
+
+    if (j.includes('koordinasi')) return 'fa-triangle-exclamation';
 
     if (j.includes('klarifikasi') || j.includes('waba')) return 'fa-people-group';
 
@@ -805,13 +813,11 @@ const Dashboard = {
 
     if (!rows || rows.length === 0) {
 
-      box.innerHTML = `<div class="state-box">Belum ada data pelayanan untuk periode ini.</div>`;
+      box.innerHTML = `<tr><td colspan="6"><div class="state-box">Belum ada data pelayanan untuk periode ini.</div></td></tr>`;
 
       return;
 
     }
-
-    const palette = ['#0B2A5B', '#F5B400', '#061B3D', '#F5B400', '#0B2A5B', '#F5B400', '#061B3D', '#F5B400'];
 
     box.innerHTML = rows.map((r, i) => {
 
@@ -821,37 +827,55 @@ const Dashboard = {
 
       const pct = target > 0 ? Math.round((capaian / target) * 100) : 0;
 
-      const color = palette[i % palette.length];
-
       const tier = this.tierColor(pct);
+
+      const linkHtml = r.link ? ` <a href="${Utils.escape(r.link)}" target="_blank" rel="noopener" class="pk-pelayanan-doclink" title="Buka dokumen ${Utils.escape(r.jenis)}"><i class="fa-solid fa-link"></i></a>` : '';
+
+      let statusTag = '';
+
+      if (pct > 100) {
+
+        statusTag = `<span class="pk-spml-tag pk-spml-tag--over"><i class="fa-solid fa-circle-check"></i> Melampaui Target</span>`;
+
+      } else if (pct === 0) {
+
+        statusTag = `<span class="pk-spml-tag pk-spml-tag--none"><i class="fa-solid fa-circle-xmark"></i> Belum Terealisasi</span>`;
+
+      }
 
       return `
 
-        <div class="pk-pelayanan-card">
+        <tr>
 
-          <div class="pk-pelayanan-wash" style="--card-color:${color}"></div>
+          <td class="pk-spml-no">${i + 1}</td>
 
-          <div class="pk-pelayanan-dots" style="color:${color}"></div>
+          <td class="pk-spml-kegiatan">
 
-          <div class="pk-pelayanan-icon" style="--card-color:${color}"><i class="fa-solid ${this.pelayananIcon(r.jenis)}"></i></div>
+            <span class="pk-spml-icon" style="background:${tier}1f; color:${tier};"><i class="fa-solid ${this.pelayananIcon(r.jenis)}"></i></span>
 
-          <div class="pk-pelayanan-value" style="color:${color}">${capaian}</div>
+            <span class="pk-spml-name">${Utils.escape(r.jenis)}${linkHtml}</span>
 
-          <div class="pk-pelayanan-label">${Utils.escape(r.jenis)}${r.link ? ` <a href="${Utils.escape(r.link)}" target="_blank" rel="noopener" class="pk-pelayanan-doclink" title="Buka dokumen ${Utils.escape(r.jenis)}"><i class="fa-solid fa-link"></i></a>` : ''}</div>
+          </td>
 
-          <div class="pk-pelayanan-target">Target: ${target}</div>
+          <td class="pk-spml-target">${target}</td>
 
-          <div class="pk-pelayanan-progress">
+          <td class="pk-spml-realisasi">${capaian}</td>
 
-            <div class="pk-pelayanan-progress-track"><div class="pk-pelayanan-progress-fill" style="width:${Math.min(100, pct)}%; background:${color};"></div></div>
+          <td><span class="pk-spml-pct" style="background:${tier};">${pct}%</span></td>
 
-            <span class="pk-pelayanan-progress-pct" style="background:${tier}; color:#fff;">${pct}%</span>
+          <td class="pk-spml-progress-cell">
 
-          </div>
+            <div class="pk-spml-progress-row">
 
-          <div class="pk-pelayanan-underline" style="background:${color}"></div>
+              <div class="pk-spml-progress-track"><div class="pk-spml-progress-fill" style="width:${Math.min(100, pct)}%; background:${tier};"></div></div>
 
-        </div>`;
+              ${statusTag}
+
+            </div>
+
+          </td>
+
+        </tr>`;
 
     }).join('');
 
