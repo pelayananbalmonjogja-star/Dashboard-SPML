@@ -248,9 +248,13 @@ const Dashboard = {
 
       const id = periodeId(tahun, bulan);
 
+      const prevPeriode = (typeof getPrevPeriode === 'function') ? getPrevPeriode(tahun, bulan) : null;
+
+      const prevId = prevPeriode ? periodeId(prevPeriode.tahun, prevPeriode.bulan) : null;
 
 
-      const [pkSnap, survei, primaaksiSnap, monitoringSnap, pelayananSnap, kegiatanSnap, tamuSnap, sppSnap, isrTerbitSnap, catatanSnap] = await Promise.all([
+
+      const [pkSnap, survei, primaaksiSnap, monitoringSnap, pelayananSnap, kegiatanSnap, tamuSnap, tamuPrevSnap, sppSnap, isrTerbitSnap, catatanSnap] = await Promise.all([
 
         db.collection('pk').doc(id).get(),
 
@@ -265,6 +269,8 @@ const Dashboard = {
         db.collection('kegiatan').where('tahun', '==', tahun).where('bulan', '==', bulan).get(),
 
         db.collection('tamuLayanan').doc(id).get(),
+
+        prevId ? db.collection('tamuLayanan').doc(prevId).get() : Promise.resolve(null),
 
         db.collection('sppBhp').doc(id).get(),
 
@@ -288,6 +294,8 @@ const Dashboard = {
 
       const tamu = tamuSnap.exists ? tamuSnap.data() : null;
 
+      const tamuPrev = (tamuPrevSnap && tamuPrevSnap.exists) ? tamuPrevSnap.data() : null;
+
       const spp = sppSnap.exists ? sppSnap.data() : null;
 
       const isrTerbit = isrTerbitSnap.exists ? isrTerbitSnap.data() : null;
@@ -296,7 +304,7 @@ const Dashboard = {
 
 
 
-      this.renderAll({ pk, survei, primaaksi, monitoring, pelayanan, kegiatan, tamu, spp, isrTerbit, catatan });
+      this.renderAll({ pk, survei, primaaksi, monitoring, pelayanan, kegiatan, tamu, tamuPrev, spp, isrTerbit, catatan });
 
     } catch (err) {
 
@@ -332,9 +340,11 @@ const Dashboard = {
 
     this.renderSurvey(data.survei);
 
-    this.renderTamu(data.tamu);
+    this.renderTamu(data.tamu, data.tamuPrev);
 
     this.renderIsrSpp(data.isrTerbit, data.spp);
+
+    this.renderRingkasanLayanan(data.tamu);
 
     this.renderPelayanan(data.pelayanan);
 
@@ -683,8 +693,8 @@ const Dashboard = {
 
 
 
-  /* ---------------- JUMLAH TAMU PELAYANAN (format sama seperti survey) ---------------- */
-  renderTamu(tamu) {
+  /* ---------------- STRIP RINGKASAN TAMU (Total Tamu, Broadcast, Non Broadcast, Online, Offline) ---------------- */
+  renderTamu(tamu, tamuPrev) {
     const box = document.getElementById('tamuGrid');
     if (!tamu) {
       box.innerHTML = `<div class="state-box">Belum ada data tamu pelayanan.</div>`;
@@ -694,89 +704,119 @@ const Dashboard = {
     const nonBroadcast = Number(tamu.TamuNonBroadcast) || 0;
     const online = Number(tamu.PelayananOnline) || 0;
     const offline = Number(tamu.PelayananOffline) || 0;
+    const total = broadcast + nonBroadcast + online + offline;
+    const pct = (n) => total > 0 ? Math.round((n / total) * 100) : 0;
 
-    box.innerHTML = `
-      <div class="pk-survey-card pk-survey-card--row" style="--card-color:#F5722F; background:linear-gradient(160deg,#F5722F22,#F5722F08);">
-        <div class="pk-survey-icon" style="background:#F5722F; color:#fff;"><i class="fa-solid fa-tower-broadcast"></i></div>
+    // Trend "dari bulan lalu" untuk Total Tamu, dihitung dari data periode sebelumnya (jika ada)
+    let trendHtml = '';
+    if (tamuPrev) {
+      const pBroadcast = Number(tamuPrev.TamuBroadcast) || 0;
+      const pNonBroadcast = Number(tamuPrev.TamuNonBroadcast) || 0;
+      const pOnline = Number(tamuPrev.PelayananOnline) || 0;
+      const pOffline = Number(tamuPrev.PelayananOffline) || 0;
+      const prevTotal = pBroadcast + pNonBroadcast + pOnline + pOffline;
+      if (prevTotal > 0) {
+        const diffPct = Math.round(((total - prevTotal) / prevTotal) * 100);
+        const up = diffPct >= 0;
+        trendHtml = `<span class="pk-tamu-strip-trend ${up ? 'is-up' : 'is-down'}"><i class="fa-solid ${up ? 'fa-arrow-up' : 'fa-arrow-down'}"></i> ${Math.abs(diffPct)}% dari bulan lalu</span>`;
+      }
+    }
+    if (!trendHtml) trendHtml = `<span class="pk-tamu-strip-trend is-muted">dari bulan lalu</span>`;
+
+    const items = [
+      { icon: 'fa-user-group', color: '#0B2A5B', value: total, label: 'Total Tamu', sub: trendHtml },
+      { icon: 'fa-tower-broadcast', color: '#F5722F', value: broadcast, label: 'Tamu Broadcast', sub: `<span class="pk-tamu-strip-sub" style="color:#F5722F">${pct(broadcast)}% dari total</span>` },
+      { icon: 'fa-user-group', color: '#F5A623', value: nonBroadcast, label: 'Tamu Non Broadcast', sub: `<span class="pk-tamu-strip-sub" style="color:#F5A623">${pct(nonBroadcast)}% dari total</span>` },
+      { icon: 'fa-globe', color: '#27AE60', value: online, label: 'Pelayanan Online', sub: `<span class="pk-tamu-strip-sub" style="color:#27AE60">${pct(online)}% dari total</span>` },
+      { icon: 'fa-box-archive', color: '#2F80ED', value: offline, label: 'Pelayanan Offline', sub: `<span class="pk-tamu-strip-sub" style="color:#2F80ED">${pct(offline)}% dari total</span>` }
+    ];
+
+    box.innerHTML = items.map((it, i) => `
+      ${i > 0 ? '<div class="pk-tamu-strip-divider"></div>' : ''}
+      <div class="pk-tamu-strip-item">
+        <div class="pk-tamu-strip-icon" style="background:${it.color}"><i class="fa-solid ${it.icon}"></i></div>
         <div>
-          <div class="pk-survey-value" style="color:#F5722F;">${broadcast}</div>
-          <div class="pk-survey-label">Tamu Broadcast</div>
+          <div class="pk-tamu-strip-label">${it.label}</div>
+          <div class="pk-tamu-strip-value">${it.value}</div>
+          ${it.sub}
         </div>
-      </div>
-      <div class="pk-survey-card pk-survey-card--row" style="--card-color:#F5A623; background:linear-gradient(160deg,#F5A62322,#F5A62308);">
-        <div class="pk-survey-icon" style="background:#F5A623; color:#fff;"><i class="fa-solid fa-user-group"></i></div>
-        <div>
-          <div class="pk-survey-value" style="color:#F5A623;">${nonBroadcast}</div>
-          <div class="pk-survey-label">Tamu Non Broadcast</div>
-        </div>
-      </div>
-      <div class="pk-survey-card pk-survey-card--row" style="--card-color:#27AE60; background:linear-gradient(160deg,#27AE6022,#27AE6008);">
-        <div class="pk-survey-icon" style="background:#27AE60; color:#fff;"><i class="fa-solid fa-globe"></i></div>
-        <div>
-          <div class="pk-survey-value" style="color:#27AE60;">${online}</div>
-          <div class="pk-survey-label">Pelayanan Online</div>
-        </div>
-      </div>
-      <div class="pk-survey-card pk-survey-card--row" style="--card-color:#17B8C4; background:linear-gradient(160deg,#17B8C422,#17B8C408);">
-        <div class="pk-survey-icon" style="background:#17B8C4; color:#fff;"><i class="fa-solid fa-shop"></i></div>
-        <div>
-          <div class="pk-survey-value" style="color:#17B8C4;">${offline}</div>
-          <div class="pk-survey-label">Pelayanan Offline</div>
-        </div>
-      </div>`;
+      </div>`).join('');
   },
 
-  /* ---------------- PENERBITAN/PENCABUTAN ISR & SPP BHP (icon cards) ---------------- */
+  /* ---------------- LAYANAN & PENERBITAN (ISR + SPP BHP digabung satu grid) ---------------- */
   renderIsrSpp(isr, spp) {
-    const isrBox = document.getElementById('isrCards');
-    if (!isr) {
-      isrBox.innerHTML = `<div class="state-box">Belum ada data ISR untuk periode ini.</div>`;
-    } else {
-      const terbit = Number(isr.Terbit) || 0;
-      const cabut = Number(isr.Cabut) || 0;
-      isrBox.innerHTML = `
-        <div class="pk-pelayanan-card">
-          <div class="pk-pelayanan-wash" style="--card-color:#0B2A5B"></div>
-          <div class="pk-pelayanan-dots" style="color:#0B2A5B"></div>
-          <div class="pk-pelayanan-icon" style="--card-color:#0B2A5B"><i class="fa-solid fa-file-circle-check"></i></div>
-          <div class="pk-pelayanan-value" style="color:#0B2A5B">${terbit}</div>
-          <div class="pk-pelayanan-label">Jumlah Terbit ISR</div>
-          <div class="pk-pelayanan-underline" style="background:#0B2A5B"></div>
-        </div>
-        <div class="pk-pelayanan-card">
-          <div class="pk-pelayanan-wash" style="--card-color:#F5A623"></div>
-          <div class="pk-pelayanan-dots" style="color:#F5A623"></div>
-          <div class="pk-pelayanan-icon" style="--card-color:#F5A623"><i class="fa-solid fa-file-circle-xmark"></i></div>
-          <div class="pk-pelayanan-value" style="color:#F5A623">${cabut}</div>
-          <div class="pk-pelayanan-label">Jumlah ISR Tercabut</div>
-          <div class="pk-pelayanan-underline" style="background:#F5A623"></div>
-        </div>`;
+    const box = document.getElementById('lpCards');
+    const terbit = isr ? (Number(isr.Terbit) || 0) : 0;
+    const cabut = isr ? (Number(isr.Cabut) || 0) : 0;
+    const annual = spp ? (Number(spp.SPPAnnual) || 0) : 0;
+    const reminder = spp ? (Number(spp.SPPReminder) || 0) : 0;
+    const baru = spp ? (Number(spp.SPPNew) || 0) : 0;
+    const renewal = spp ? (Number(spp.SPPRenewal) || 0) : 0;
+
+    if (!isr && !spp) {
+      box.innerHTML = `<div class="state-box">Belum ada data ISR &amp; SPP BHP untuk periode ini.</div>`;
+      return;
     }
 
-    const sppBox = document.getElementById('sppCards');
-    if (!spp) {
-      sppBox.innerHTML = `<div class="state-box">Belum ada data SPP BHP untuk periode ini.</div>`;
-    } else {
-      const annual = Number(spp.SPPAnnual) || 0;
-      const reminder = Number(spp.SPPReminder) || 0;
-      const baru = Number(spp.SPPNew) || 0;
-      const renewal = Number(spp.SPPRenewal) || 0;
-      const sppDef = [
-        { color: '#2F80ED', icon: 'fa-calendar-check', value: annual, label: 'SPP Annual' },
-        { color: '#F5A623', icon: 'fa-bell', value: reminder, label: 'SPP Reminder' },
-        { color: '#0B2A5B', icon: 'fa-file-circle-plus', value: baru, label: 'SPP New' },
-        { color: '#F5722F', icon: 'fa-rotate', value: renewal, label: 'SPP Renewal' }
-      ];
-      sppBox.innerHTML = sppDef.map(d => `
-        <div class="pk-pelayanan-card">
-          <div class="pk-pelayanan-wash" style="--card-color:${d.color}"></div>
-          <div class="pk-pelayanan-dots" style="color:${d.color}"></div>
-          <div class="pk-pelayanan-icon" style="--card-color:${d.color}"><i class="fa-solid ${d.icon}"></i></div>
-          <div class="pk-pelayanan-value" style="color:${d.color}">${d.value}</div>
-          <div class="pk-pelayanan-label">${d.label}</div>
-          <div class="pk-pelayanan-underline" style="background:${d.color}"></div>
-        </div>`).join('');
+    const items = [
+      { color: '#0B2A5B', icon: 'fa-file-circle-check', value: terbit, label: 'ISR Terbit' },
+      { color: '#F5722F', icon: 'fa-file-circle-xmark', value: cabut, label: 'ISR Tercabut' },
+      { color: '#2F80ED', icon: 'fa-calendar-check', value: annual, label: 'SPP Annual' },
+      { color: '#F5A623', icon: 'fa-bell', value: reminder, label: 'SPP Reminder' },
+      { color: '#0B2A5B', icon: 'fa-file-circle-plus', value: baru, label: 'SPP New' },
+      { color: '#F5722F', icon: 'fa-rotate', value: renewal, label: 'SPP Renewal' }
+    ];
+
+    box.innerHTML = items.map(d => `
+      <div class="pk-lp-item">
+        <div class="pk-lp-label">${d.label}</div>
+        <div class="pk-lp-row">
+          <div class="pk-lp-icon" style="color:${d.color}"><i class="fa-solid ${d.icon}"></i></div>
+          <div class="pk-lp-value" style="color:${d.color}">${d.value}</div>
+        </div>
+        <div class="pk-lp-underline" style="background:${d.color}"></div>
+      </div>`).join('');
+  },
+
+  /* ---------------- RINGKASAN LAYANAN (Total Layanan Online+Offline, via WA / Loket) ---------------- */
+  renderRingkasanLayanan(tamu) {
+    const box = document.getElementById('ringkasanBody');
+    if (!tamu) {
+      box.innerHTML = `<div class="state-box">Belum ada data pelayanan untuk periode ini.</div>`;
+      return;
     }
+    const online = Number(tamu.PelayananOnline) || 0; // via WA Pelayanan
+    const offline = Number(tamu.PelayananOffline) || 0; // via Loket Pelayanan
+    const total = online + offline;
+    const waPct = total > 0 ? ((online / total) * 100) : 0;
+    const loketPct = total > 0 ? ((offline / total) * 100) : 0;
+
+    box.innerHTML = `
+      <div class="pk-ringkasan-total">
+        <div class="pk-ringkasan-total-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+        <div>
+          <div class="pk-ringkasan-total-label">Total Layanan<br>(Online &amp; Offline)</div>
+          <div class="pk-ringkasan-total-value">${total}</div>
+        </div>
+      </div>
+      <div class="pk-ringkasan-rows">
+        <div class="pk-ringkasan-row">
+          <div class="pk-ringkasan-row-icon" style="background:#27AE60"><i class="fa-brands fa-whatsapp"></i></div>
+          <div class="pk-ringkasan-row-text">
+            <div class="pk-ringkasan-row-label">Melalui WA Pelayanan</div>
+            <div class="pk-ringkasan-row-value">${online}</div>
+          </div>
+          <div class="pk-ringkasan-row-pct" style="color:#27AE60">${waPct.toFixed(1)}%</div>
+        </div>
+        <div class="pk-ringkasan-row">
+          <div class="pk-ringkasan-row-icon" style="background:#2F80ED"><i class="fa-solid fa-box-archive"></i></div>
+          <div class="pk-ringkasan-row-text">
+            <div class="pk-ringkasan-row-label">Melalui Loket Pelayanan</div>
+            <div class="pk-ringkasan-row-value">${offline}</div>
+          </div>
+          <div class="pk-ringkasan-row-pct" style="color:#2F80ED">${loketPct.toFixed(1)}%</div>
+        </div>
+      </div>`;
   },
 
   /* ---------------- PELAYANAN PUBLIK (icon cards) ---------------- */

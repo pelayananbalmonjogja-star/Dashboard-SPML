@@ -20,6 +20,14 @@ function periodeId(tahun, bulan) {
   return `${tahun}_${bulan}`;
 }
 
+/** Periode (tahun, bulan) sebelumnya dari periode yang diberikan. Otomatis mundur ke Desember tahun sebelumnya jika bulan = Januari. */
+function getPrevPeriode(tahun, bulan) {
+  const idx = BULAN_ORDER.indexOf(bulan);
+  if (idx === -1) return null;
+  if (idx === 0) return { tahun: Number(tahun) - 1, bulan: BULAN_ORDER[11] };
+  return { tahun, bulan: BULAN_ORDER[idx - 1] };
+}
+
 /** Daftar 3 nama bulan dalam satu triwulan yang sama dengan `bulan` (mis. "Mei" -> ["April","Mei","Juni"]) */
 function getTriwulanMonths(bulan) {
   const idx = BULAN_ORDER.indexOf(bulan);

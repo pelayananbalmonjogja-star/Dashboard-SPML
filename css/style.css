@@ -1315,6 +1315,59 @@ footer {
 .pk-realisasi-note-ok { color: var(--text-muted); }
 .pk-realisasi-note-bad { color: var(--red); font-weight: 600; }
 
+/* ---------- Strip Ringkasan Tamu (Total Tamu, Broadcast, dst) ---------- */
+.pk-tamu-strip-panel { padding: 18px 20px; }
+.pk-tamu-strip { display: flex; align-items: center; flex-wrap: wrap; gap: 18px 22px; }
+.pk-tamu-strip-item { display: flex; align-items: center; gap: 12px; }
+.pk-tamu-strip-icon {
+  flex: none; width: 46px; height: 46px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 18px;
+}
+.pk-tamu-strip-label { font-size: 12.5px; color: var(--text-muted); font-weight: 600; }
+.pk-tamu-strip-value { font-size: 24px; font-weight: 800; color: var(--text-main); line-height: 1.25; }
+.pk-tamu-strip-sub { font-size: 11.5px; font-weight: 700; }
+.pk-tamu-strip-trend { font-size: 11.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+.pk-tamu-strip-trend.is-up { color: var(--green); }
+.pk-tamu-strip-trend.is-down { color: var(--red); }
+.pk-tamu-strip-trend.is-muted { color: var(--text-muted); font-weight: 600; }
+.pk-tamu-strip-divider { width: 1px; align-self: stretch; min-height: 44px; background: var(--border); }
+@media (max-width: 900px) { .pk-tamu-strip-divider { display: none; } }
+
+/* ---------- Layanan & Penerbitan (ISR + SPP BHP digabung) ---------- */
+.pk-row--lp { display: flex; gap: 14px; align-items: stretch; flex-wrap: wrap; }
+.pk-row--lp > #section-isr, .pk-row--lp > .pk-panel--lp { flex: 1.35 1 380px; }
+.pk-row--lp > #section-ringkasan, .pk-row--lp > .pk-panel--ringkasan { flex: 1 1 300px; }
+.pk-lp-grid { display: flex; flex-wrap: wrap; gap: 18px 14px; }
+.pk-lp-item { flex: 1 1 140px; min-width: 110px; display: flex; flex-direction: column; gap: 4px; }
+.pk-lp-label { font-size: 11.5px; color: var(--text-muted); font-weight: 700; }
+.pk-lp-row { display: flex; align-items: baseline; gap: 8px; }
+.pk-lp-icon { font-size: 16px; }
+.pk-lp-value { font-size: 24px; font-weight: 800; }
+.pk-lp-underline { width: 34px; height: 3px; border-radius: 3px; margin-top: 4px; }
+
+/* ---------- Ringkasan Layanan (Total + via WA / Loket) ---------- */
+.pk-ringkasan-body { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.pk-ringkasan-total { display: flex; align-items: center; gap: 12px; padding-right: 18px; border-right: 1px solid var(--border); }
+@media (max-width: 700px) { .pk-ringkasan-total { border-right: none; padding-right: 0; } }
+.pk-ringkasan-total-icon {
+  flex: none; width: 50px; height: 50px; border-radius: 50%;
+  background: var(--gray-bg); color: var(--navy);
+  display: flex; align-items: center; justify-content: center; font-size: 19px;
+}
+.pk-ringkasan-total-label { font-size: 11.5px; color: var(--text-muted); font-weight: 600; line-height: 1.3; }
+.pk-ringkasan-total-value { font-size: 26px; font-weight: 800; color: var(--navy); }
+.pk-ringkasan-rows { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 12px; }
+.pk-ringkasan-row { display: flex; align-items: center; gap: 10px; }
+.pk-ringkasan-row-icon {
+  flex: none; width: 32px; height: 32px; border-radius: 50%; color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+}
+.pk-ringkasan-row-text { flex: 1; }
+.pk-ringkasan-row-label { font-size: 11.5px; color: var(--text-muted); font-weight: 600; }
+.pk-ringkasan-row-value { font-size: 17px; font-weight: 800; color: var(--text-main); }
+.pk-ringkasan-row-pct { font-size: 15px; font-weight: 800; }
+
 /* ---------- Realisasi Kegiatan SPML (progress table) ---------- */
 .pk-spml-table-wrap { overflow-x: auto; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); }
 .pk-spml-table { width: 100%; min-width: 720px; border-collapse: collapse; font-size: 13px; background: var(--white); }

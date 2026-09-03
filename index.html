@@ -94,12 +94,8 @@
         <i class="fa-solid fa-user-group"></i> <span class="pk-nav-text">Tamu Pelayanan</span>
       </a>
 
-      <a href="#section-isr" class="pk-nav-item" data-kategori="isr" data-tooltip="ISR">
-        <i class="fa-solid fa-file-shield"></i> <span class="pk-nav-text">Penerbitan &amp; Pencabutan ISR</span>
-      </a>
-
-      <a href="#section-spp" class="pk-nav-item" data-kategori="spp" data-tooltip="SPP BHP">
-        <i class="fa-solid fa-file-invoice-dollar"></i> <span class="pk-nav-text">Penerbitan SPP BHP</span>
+      <a href="#section-isr" class="pk-nav-item" data-kategori="isr" data-tooltip="Layanan & Penerbitan">
+        <i class="fa-solid fa-file-shield"></i> <span class="pk-nav-text">Layanan &amp; Penerbitan</span>
       </a>
 
       <a href="#section-pelayanan" class="pk-nav-item" data-kategori="pelayanan" data-tooltip="Realisasi Kegiatan SPML">
@@ -282,37 +278,35 @@
 
 
 
-      <!-- ============ JUMLAH TAMU PELAYANAN ============ -->
+      <!-- ============ RINGKASAN TAMU (STRIP ATAS) ============ -->
 
-      <section id="section-tamu" class="pk-panel pk-panel-wide pk-panel--red">
+      <section id="section-tamu" class="pk-panel pk-panel-wide pk-tamu-strip-panel">
 
-        <h3><i class="fa-solid fa-user-group"></i> Jumlah Tamu Pelayanan</h3>
-
-        <div class="pk-survey-grid pk-survey-grid--4col" id="tamuGrid"></div>
+        <div class="pk-tamu-strip" id="tamuGrid"></div>
 
       </section>
 
 
 
-      <!-- ============ PENERBITAN & PENCABUTAN ISR + PENERBITAN SPP BHP ============ -->
+      <!-- ============ LAYANAN & PENERBITAN + RINGKASAN LAYANAN ============ -->
 
-      <div class="pk-row">
+      <div class="pk-row pk-row--lp">
 
-        <section id="section-isr" class="pk-panel pk-panel--red">
+        <section id="section-isr" class="pk-panel pk-panel--red pk-panel--lp">
 
-          <h3><i class="fa-solid fa-file-shield"></i> Penerbitan dan Pencabutan ISR</h3>
+          <h3><i class="fa-solid fa-file-shield"></i> Layanan &amp; Penerbitan</h3>
 
-          <div class="pk-pelayanan-grid" id="isrCards"></div>
+          <div class="pk-lp-grid" id="lpCards"></div>
 
         </section>
 
 
 
-        <section id="section-spp" class="pk-panel pk-panel--red">
+        <section id="section-ringkasan" class="pk-panel pk-panel--red pk-panel--ringkasan">
 
-          <h3><i class="fa-solid fa-file-invoice-dollar"></i> Penerbitan SPP BHP</h3>
+          <h3><i class="fa-solid fa-clipboard-list"></i> Ringkasan Layanan</h3>
 
-          <div class="pk-pelayanan-grid" id="sppCards"></div>
+          <div class="pk-ringkasan-body" id="ringkasanBody"></div>
 
         </section>
 
