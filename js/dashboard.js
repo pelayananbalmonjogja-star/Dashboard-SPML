@@ -704,7 +704,8 @@ const Dashboard = {
     const nonBroadcast = Number(tamu.TamuNonBroadcast) || 0;
     const online = Number(tamu.PelayananOnline) || 0;
     const offline = Number(tamu.PelayananOffline) || 0;
-    const total = broadcast + nonBroadcast + online + offline;
+    // Total Tamu = Online + Offline (Broadcast/Non Broadcast hanya pembagian lain dari tamu yang sama)
+    const total = online + offline;
     const pct = (n) => total > 0 ? Math.round((n / total) * 100) : 0;
 
     // Trend "dari bulan lalu" untuk Total Tamu, dihitung dari data periode sebelumnya (jika ada)
@@ -714,7 +715,7 @@ const Dashboard = {
       const pNonBroadcast = Number(tamuPrev.TamuNonBroadcast) || 0;
       const pOnline = Number(tamuPrev.PelayananOnline) || 0;
       const pOffline = Number(tamuPrev.PelayananOffline) || 0;
-      const prevTotal = pBroadcast + pNonBroadcast + pOnline + pOffline;
+      const prevTotal = pOnline + pOffline;
       if (prevTotal > 0) {
         const diffPct = Math.round(((total - prevTotal) / prevTotal) * 100);
         const up = diffPct >= 0;
